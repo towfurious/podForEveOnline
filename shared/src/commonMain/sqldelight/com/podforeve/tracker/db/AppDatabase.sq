@@ -1,0 +1,114 @@
+-- Schema version 1 — MVP cache tables.
+-- See wiki: [[SQLDelight Migrations]]
+
+CREATE TABLE IF NOT EXISTS character (
+    character_id    INTEGER NOT NULL PRIMARY KEY,
+    name            TEXT    NOT NULL,
+    portrait_url    TEXT    NOT NULL,
+    isk_balance     REAL    NOT NULL DEFAULT 0.0,
+    cached_at       INTEGER NOT NULL  -- epoch seconds
+);
+
+CREATE TABLE IF NOT EXISTS skill_queue_entry (
+    queue_position  INTEGER NOT NULL,
+    character_id    INTEGER NOT NULL REFERENCES character(character_id),
+    skill_id        INTEGER NOT NULL,
+    skill_name      TEXT    NOT NULL,
+    finished_level  INTEGER NOT NULL,
+    start_sp        INTEGER NOT NULL,
+    finish_sp       INTEGER NOT NULL,
+    start_date      INTEGER,          -- epoch seconds; NULL when queue is paused
+    finish_date     INTEGER,          -- epoch seconds; NULL when queue is paused
+    cached_at       INTEGER NOT NULL,
+    PRIMARY KEY (character_id, queue_position)
+);
+
+CREATE TABLE IF NOT EXISTS planet (
+    planet_id       INTEGER NOT NULL,
+    character_id    INTEGER NOT NULL REFERENCES character(character_id),
+    planet_name     TEXT    NOT NULL,
+    planet_type     TEXT    NOT NULL,
+    last_update     INTEGER,          -- epoch seconds of last ESI activity
+    upgrade_level   INTEGER NOT NULL DEFAULT 0,
+    cached_at       INTEGER NOT NULL,
+    PRIMARY KEY (character_id, planet_id)
+);
+
+CREATE TABLE IF NOT EXISTS industry_job (
+    job_id          INTEGER NOT NULL PRIMARY KEY,
+    character_id    INTEGER NOT NULL REFERENCES character(character_id),
+    activity_id     INTEGER NOT NULL,
+    blueprint_name  TEXT    NOT NULL,
+    runs            INTEGER NOT NULL,
+    start_date      INTEGER NOT NULL, -- epoch seconds
+    end_date        INTEGER NOT NULL, -- epoch seconds
+    status          TEXT    NOT NULL, -- "active" | "delivered" | "cancelled"
+    cached_at       INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS skill_type (
+    type_id   INTEGER NOT NULL PRIMARY KEY,
+    name      TEXT    NOT NULL,
+    cached_at INTEGER NOT NULL
+);
+
+-- Queries: character -------------------------------------------------------
+
+getCharacter:
+SELECT * FROM character WHERE character_id = :characterId;
+
+upsertCharacter:
+INSERT OR REPLACE INTO character (character_id, name, portrait_url, isk_balance, cached_at)
+VALUES (?, ?, ?, ?, ?);
+
+-- Queries: skill queue ------------------------------------------------------
+
+getSkillQueue:
+SELECT * FROM skill_queue_entry
+WHERE character_id = :characterId
+ORDER BY queue_position ASC;
+
+upsertSkillQueueEntry:
+INSERT OR REPLACE INTO skill_queue_entry (
+    queue_position, character_id, skill_id, skill_name,
+    finished_level, start_sp, finish_sp, start_date, finish_date, cached_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+clearSkillQueue:
+DELETE FROM skill_queue_entry WHERE character_id = :characterId;
+
+-- Queries: skill type names -------------------------------------------------
+
+getSkillTypeName:
+SELECT name FROM skill_type WHERE type_id = :typeId;
+
+upsertSkillType:
+INSERT OR REPLACE INTO skill_type (type_id, name, cached_at) VALUES (?, ?, ?);
+
+-- Queries: planets ----------------------------------------------------------
+
+getPlanets:
+SELECT * FROM planet WHERE character_id = :characterId ORDER BY planet_id ASC;
+
+upsertPlanet:
+INSERT OR REPLACE INTO planet (
+    planet_id, character_id, planet_name, planet_type, last_update, upgrade_level, cached_at
+) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+clearPlanets:
+DELETE FROM planet WHERE character_id = :characterId;
+
+-- Queries: industry jobs ----------------------------------------------------
+
+getActiveIndustryJobs:
+SELECT * FROM industry_job
+WHERE character_id = :characterId AND status = 'active'
+ORDER BY end_date ASC;
+
+upsertIndustryJob:
+INSERT OR REPLACE INTO industry_job (
+    job_id, character_id, activity_id, blueprint_name, runs, start_date, end_date, status, cached_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+clearActiveIndustryJobs:
+DELETE FROM industry_job WHERE character_id = :characterId AND status = 'active';

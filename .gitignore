@@ -1,0 +1,18 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+local.properties
+
+# Kotlin
+.kotlin/
+
+# iOS
+iosApp/.build/
+*.xcworkspace/
+DerivedData/
+*.xcuserstate

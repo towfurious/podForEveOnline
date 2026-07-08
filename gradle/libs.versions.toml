@@ -1,8 +1,8 @@
 [versions]
 # Core — verify latest before building
-kotlin                  = "2.0.21"
+kotlin                  = "2.1.21"
 agp                     = "8.13.2"
-compose-multiplatform   = "1.6.11"
+compose-multiplatform   = "1.7.3"
 
 # Networking + serialization
 ktor                    = "2.3.12"
@@ -68,7 +68,7 @@ voyager-koin                  = { module = "cafe.adriel.voyager:voyager-koin",  
 # Coil 3
 coil3-compose         = { module = "io.coil-kt.coil3:coil-compose",          version.ref = "coil3" }
 coil3-network-okhttp  = { module = "io.coil-kt.coil3:coil-network-okhttp",   version.ref = "coil3" }
-coil3-network-ktor    = { module = "io.coil-kt.coil3:coil-network-ktor",     version.ref = "coil3" }
+coil3-network-ktor    = { module = "io.coil-kt.coil3:coil-network-ktor2",    version.ref = "coil3" }
 
 # Android / Compose
 compose-activity        = { module = "androidx.activity:activity-compose",         version.ref = "androidx-activity" }

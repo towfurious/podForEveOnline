@@ -26,11 +26,11 @@ import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.platform.rememberUrlLauncher
 import kotlinx.coroutines.launch
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform.getKoin
 
 @Composable
 fun LoginScreen() {
-    val authRepository: AuthRepository = remember { GlobalContext.get().get() }
+    val authRepository: AuthRepository = remember { getKoin().get() }
     val authState by authRepository.authState.collectAsState()
     val urlLauncher = rememberUrlLauncher()
     val scope = rememberCoroutineScope()

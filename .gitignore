@@ -16,3 +16,6 @@ iosApp/.build/
 *.xcworkspace/
 DerivedData/
 *.xcuserstate
+
+# iOS secrets (never commit)
+iosApp/iosApp/Configuration/Secrets.xcconfig

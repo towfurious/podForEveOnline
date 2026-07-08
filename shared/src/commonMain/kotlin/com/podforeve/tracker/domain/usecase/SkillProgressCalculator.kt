@@ -34,7 +34,7 @@ class SkillProgressCalculator(private val clock: Clock = Clock.System) {
     }
 }
 
-// Extension used by UI formatters.
+// Active-skill header: full h/m/s precision.
 fun Duration.formatHms(): String {
     val total = inWholeSeconds.coerceAtLeast(0L)
     val h = total / 3600
@@ -44,5 +44,18 @@ fun Duration.formatHms(): String {
         h > 0L -> "${h}h ${m}m ${s}s"
         m > 0L -> "${m}m ${s}s"
         else   -> "${s}s"
+    }
+}
+
+// Queue rows: days + hours + minutes, no seconds (long durations are > 24 h).
+fun Duration.formatDhm(): String {
+    val total = inWholeSeconds.coerceAtLeast(0L)
+    val d = total / 86400
+    val h = (total % 86400) / 3600
+    val m = (total % 3600) / 60
+    return when {
+        d > 0L -> "${d}d ${h}h ${m}m"
+        h > 0L -> "${h}h ${m}m"
+        else   -> "${m}m"
     }
 }

@@ -17,9 +17,11 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
+import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.domain.usecase.formatHms
 import kotlinx.coroutines.delay
 
@@ -51,6 +53,9 @@ fun ActiveSkillProgressSection(
             Text(
                 text = "${entry.skillName} → Level ${entry.finishedLevel}",
                 style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
             )
             Text(
                 text = snapshot?.remaining?.formatHms() ?: "Paused",
@@ -98,7 +103,7 @@ fun SkillQueueRow(
             style = MaterialTheme.typography.bodyMedium,
         )
         Text(
-            snapshot?.remaining?.formatHms() ?: "Paused",
+            snapshot?.remaining?.formatDhm() ?: "Paused",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

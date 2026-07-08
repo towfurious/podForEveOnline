@@ -42,6 +42,9 @@ kotlin {
             implementation(libs.androidx.browser)
             implementation(libs.coil3.network.okhttp) // portrait image loading on Android
         }
+        iosMain.dependencies {
+            implementation(libs.coil3.network.ktor) // portrait image loading on iOS
+        }
     }
 }
 

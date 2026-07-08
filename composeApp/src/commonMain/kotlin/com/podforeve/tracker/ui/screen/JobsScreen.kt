@@ -32,7 +32,7 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import com.podforeve.tracker.domain.model.IndustryJob
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
-import com.podforeve.tracker.domain.usecase.formatHms
+import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.viewmodel.IndustryJobViewModel
 import kotlinx.coroutines.delay
@@ -131,7 +131,7 @@ private fun JobCard(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text  = snapshot.remaining.formatHms(),
+                text  = snapshot.remaining.formatDhm(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

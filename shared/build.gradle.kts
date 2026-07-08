@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
@@ -54,7 +56,7 @@ android {
     buildFeatures { buildConfig = true }
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
-        val localProps = java.util.Properties()
+        val localProps = Properties()
         rootProject.file("local.properties").takeIf { it.exists() }
             ?.let { localProps.load(it.inputStream()) }
         buildConfigField("String", "ESI_CLIENT_ID",

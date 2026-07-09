@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.data.repository
 
 import com.podforeve.tracker.data.remote.esi.CharacterEsiApi
@@ -8,7 +10,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 // Stale-While-Revalidate: emit cached character + wallet immediately, then refresh from ESI.
 // See wiki: [[Stale-While-Revalidate Cache]], [[Character]]

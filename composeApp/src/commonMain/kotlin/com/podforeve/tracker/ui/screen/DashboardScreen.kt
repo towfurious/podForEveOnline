@@ -4,22 +4,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,11 +32,14 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import coil3.compose.AsyncImage
+import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.shimmer
+import com.podforeve.tracker.ui.theme.EmberColorScheme
 import com.podforeve.tracker.ui.viewmodel.DashboardData
 import com.podforeve.tracker.ui.viewmodel.DashboardViewModel
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.abs
 import kotlin.math.round
 
@@ -48,11 +53,11 @@ class DashboardScreen : Screen {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Dashboard") }) },
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets.statusBars,
     ) { padding ->
         Box(
             Modifier
@@ -70,11 +75,12 @@ private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit)
 
 @Composable
 private fun DashboardSuccess(data: DashboardData) {
+    val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Column(
         Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = navBottom + 96.dp),
     ) {
         // Character header
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -182,4 +188,36 @@ private fun roundTo2dp(value: Double): String {
     val i = rounded.toLong()
     val f = abs(round((rounded - i) * 100.0)).toLong()
     return "$i.${f.toString().padStart(2, '0')}"
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+private val previewSkill = SkillQueueEntry(
+    queuePosition = 1, characterId = 0L, skillId = 3456,
+    skillName = "Coherent Ore Processing", finishedLevel = 5,
+    startSp = 24_000, finishSp = 1_280_000,
+    startDate = 1_752_000_000L, finishDate = 4_000_000_000L,
+)
+
+@Preview @Composable
+private fun DashboardPreviewSuccess() = MaterialTheme(EmberColorScheme) {
+    DashboardContent(
+        state = UiState.Success(DashboardData(
+            name = "ToWFurious",
+            portraitUrl = "",
+            iskBalance = 99_970_000.0,
+            activeSkill = previewSkill,
+        )),
+        onRetry = {},
+    )
+}
+
+@Preview @Composable
+private fun DashboardPreviewLoading() = MaterialTheme(EmberColorScheme) {
+    DashboardContent(state = UiState.Loading, onRetry = {})
+}
+
+@Preview @Composable
+private fun DashboardPreviewError() = MaterialTheme(EmberColorScheme) {
+    DashboardContent(state = UiState.Error("Not authenticated"), onRetry = {})
 }

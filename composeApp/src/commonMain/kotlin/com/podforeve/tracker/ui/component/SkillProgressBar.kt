@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.ui.component
 
 import androidx.compose.foundation.Canvas

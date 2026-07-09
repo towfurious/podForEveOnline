@@ -1,8 +1,10 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.domain.usecase
 
 import com.podforeve.tracker.domain.model.SkillQueueEntry
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

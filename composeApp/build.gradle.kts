@@ -9,7 +9,6 @@ kotlin {
     androidTarget()
 
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64(),
     ).forEach {
@@ -27,15 +26,16 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
             implementation(compose.ui)
             implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.tab.navigator)
             implementation(libs.voyager.koin)
             implementation(libs.coil3.compose)
             implementation(libs.koin.core)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.haze)
         }
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)

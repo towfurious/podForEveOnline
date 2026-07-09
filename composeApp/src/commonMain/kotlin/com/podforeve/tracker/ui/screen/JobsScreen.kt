@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,24 +22,32 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import com.podforeve.tracker.domain.model.IndustryJob
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.ui.theme.EmberColorScheme
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.viewmodel.IndustryJobViewModel
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 // See wiki: [[Screen - Jobs]], [[Industry Job]]
 class JobsScreen : Screen {
@@ -48,11 +59,11 @@ class JobsScreen : Screen {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun JobsContent(state: UiState<List<IndustryJob>>, onRetry: () -> Unit) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Industry Jobs") }) },
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets.statusBars,
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (state) {
@@ -77,7 +88,8 @@ private fun JobsSuccess(jobs: List<IndustryJob>, onRetry: () -> Unit) {
         return
     }
     val calculator = remember { SkillProgressCalculator() }
-    LazyColumn(Modifier.fillMaxSize()) {
+    val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = navBottom + 80.dp)) {
         items(jobs, key = { it.jobId }) { job ->
             JobCard(job = job, calculator = calculator, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
         }
@@ -157,4 +169,24 @@ private fun JobsError(message: String, onRetry: () -> Unit) {
             Button(onClick = onRetry) { Text("Retry") }
         }
     }
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+@Preview @Composable
+private fun JobsPreviewSuccess() = MaterialTheme(EmberColorScheme) {
+    JobsContent(
+        state = UiState.Success(listOf(
+            IndustryJob(1001, 0L, 1, "Stabber Blueprint",        5,  1_752_000_000L - 7_200,  1_752_000_000L + 18_000, "active"),
+            IndustryJob(1002, 0L, 4, "Mining Barge Blueprint",   1,  1_752_000_000L - 86_400, 1_752_000_000L + 86_400, "active"),
+            IndustryJob(1003, 0L, 8, "Catalyst Blueprint",       10, 1_752_000_000L - 3_600,  1_752_000_000L - 600,    "delivered"),
+            IndustryJob(1004, 0L, 1, "Procurer Blueprint",       3,  1_752_000_000L - 172_800,1_752_000_000L - 43_200, "delivered"),
+        )),
+        onRetry = {},
+    )
+}
+
+@Preview @Composable
+private fun JobsPreviewLoading() = MaterialTheme(EmberColorScheme) {
+    JobsContent(state = UiState.Loading, onRetry = {})
 }

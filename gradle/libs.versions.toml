@@ -1,33 +1,36 @@
 [versions]
-# Core — verify latest before building
-kotlin                  = "2.1.21"
-agp                     = "8.13.2"
-compose-multiplatform   = "1.7.3"
+# Core
+kotlin                  = "2.4.0"
+agp                     = "9.2.0"
+compose-multiplatform   = "1.11.1"
+
+# Blur
+haze                    = "1.7.2"
 
 # Networking + serialization
-ktor                    = "2.3.12"
-kotlinx-serialization   = "1.7.3"
-kotlinx-coroutines      = "1.9.0"
+ktor                    = "3.5.1"
+kotlinx-serialization   = "1.11.0"
+kotlinx-coroutines      = "1.11.0"
 
 # Persistence
-sqldelight              = "2.0.2"
+sqldelight              = "2.3.2"
 
 # DI
-koin                    = "3.5.6"
+koin                    = "4.1.1"
 
 # Navigation
 voyager                 = "1.1.0-alpha04"
 
 # Image loading
-coil3                   = "3.0.4"
+coil3                   = "3.5.0"
 
 # Android
 android-minSdk          = "28"
 android-targetSdk       = "35"
 android-compileSdk      = "36"
-androidx-activity       = "1.9.3"
-androidx-core           = "1.13.1"
-androidx-lifecycle      = "2.8.7"
+androidx-activity       = "1.10.1"
+androidx-core           = "1.16.0"
+androidx-lifecycle      = "2.9.1"
 androidx-security-crypto = "1.1.0-alpha06"
 androidx-browser        = "1.8.0"
 chucker                 = "4.1.0"
@@ -45,7 +48,7 @@ ktor-client-auth                 = { module = "io.ktor:ktor-client-auth",       
 # Kotlinx
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-coroutines-core    = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core",    version.ref = "kotlinx-coroutines" }
-kotlinx-datetime           = { module = "org.jetbrains.kotlinx:kotlinx-datetime",           version = "0.6.1" }
+kotlinx-datetime           = { module = "org.jetbrains.kotlinx:kotlinx-datetime",           version = "0.8.0" }
 
 # SQLDelight
 sqldelight-runtime        = { module = "app.cash.sqldelight:runtime",               version.ref = "sqldelight" }
@@ -59,6 +62,9 @@ koin-android = { module = "io.insert-koin:koin-android",          version.ref = 
 koin-compose = { module = "io.insert-koin:koin-compose-multiplatform", version.ref = "koin" }
 koin-test    = { module = "io.insert-koin:koin-test",             version.ref = "koin" }
 
+# Haze
+haze                    = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+
 # Voyager
 voyager-navigator             = { module = "cafe.adriel.voyager:voyager-navigator",              version.ref = "voyager" }
 voyager-tab-navigator         = { module = "cafe.adriel.voyager:voyager-tab-navigator",          version.ref = "voyager" }
@@ -68,13 +74,13 @@ voyager-koin                  = { module = "cafe.adriel.voyager:voyager-koin",  
 # Coil 3
 coil3-compose         = { module = "io.coil-kt.coil3:coil-compose",          version.ref = "coil3" }
 coil3-network-okhttp  = { module = "io.coil-kt.coil3:coil-network-okhttp",   version.ref = "coil3" }
-coil3-network-ktor    = { module = "io.coil-kt.coil3:coil-network-ktor2",    version.ref = "coil3" }
+coil3-network-ktor    = { module = "io.coil-kt.coil3:coil-network-ktor3",    version.ref = "coil3" }
 
 # Android / Compose
 compose-activity        = { module = "androidx.activity:activity-compose",         version.ref = "androidx-activity" }
 androidx-security-crypto = { module = "androidx.security:security-crypto",          version.ref = "androidx-security-crypto" }
-compose-ui-tooling      = { module = "androidx.compose.ui:ui-tooling",             version = "1.7.5" }
-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview",  version = "1.7.5" }
+compose-ui-tooling      = { module = "androidx.compose.ui:ui-tooling",             version = "1.8.1" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview",  version = "1.8.1" }
 androidx-core-ktx       = { module = "androidx.core:core-ktx",                     version.ref = "androidx-core" }
 androidx-browser        = { module = "androidx.browser:browser",                    version.ref = "androidx-browser" }
 chucker                 = { module = "com.github.chuckerteam.chucker:library",        version.ref = "chucker" }

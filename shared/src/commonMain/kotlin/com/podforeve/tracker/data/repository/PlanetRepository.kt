@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.data.repository
 
 import com.podforeve.tracker.data.remote.esi.PlanetEsiApi
@@ -8,8 +10,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 // Stale-While-Revalidate. Planet names are stable; cached names are reused across refreshes.
 // See wiki: [[Stale-While-Revalidate Cache]], [[Planet]]

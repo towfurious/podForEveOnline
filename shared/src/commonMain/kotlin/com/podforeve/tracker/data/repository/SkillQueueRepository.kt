@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.data.repository
 
 import com.podforeve.tracker.data.remote.esi.SkillQueueEsiApi
@@ -6,8 +8,8 @@ import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 // Stale-While-Revalidate: emit cached rows immediately, then refresh from ESI.
 // See wiki: [[Stale-While-Revalidate Cache]], [[Skill Queue]], [[ADR-005 - Math-Based Skill Progress]]

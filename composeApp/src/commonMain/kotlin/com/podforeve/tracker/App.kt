@@ -1,9 +1,6 @@
 package com.podforeve.tracker
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import com.podforeve.tracker.ui.icon.EveIcons
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.CurrentTab
@@ -50,6 +47,11 @@ import com.podforeve.tracker.ui.screen.LoginScreen
 import com.podforeve.tracker.ui.screen.PiScreen
 import com.podforeve.tracker.ui.screen.SkillsScreen
 import com.podforeve.tracker.ui.theme.EmberColorScheme
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.mp.KoinPlatform.getKoin
 
 // Root Composable. Ember theme. Auth gate: Loading→Splash, Unauth→Login, Auth→MainApp.
@@ -66,15 +68,21 @@ fun App() {
     }
 
     MaterialTheme(colorScheme = EmberColorScheme) {
-        val authResolved = authState !is AuthState.Loading
-        if (!splashAnimDone || !authResolved) {
-            SplashScreen(onFinished = { splashAnimDone = true })
-        } else {
-            when (authState) {
-                is AuthState.Unauthenticated,
-                is AuthState.Error         -> LoginScreen()
-                is AuthState.Authenticated -> MainApp()
-                else                       -> Unit
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            val authResolved = authState !is AuthState.Loading
+            if (!splashAnimDone || !authResolved) {
+                SplashScreen(onFinished = { splashAnimDone = true })
+            } else {
+                when (authState) {
+                    is AuthState.Unauthenticated,
+                    is AuthState.Error -> LoginScreen()
+
+                    is AuthState.Authenticated -> MainApp()
+                    else -> Unit
+                }
             }
         }
     }
@@ -91,16 +99,18 @@ private val tabs = listOf(DashboardTab, SkillsTab, PiTab, JobsTab)
 
 private val tabIcon: Map<Tab, ImageVector> = mapOf(
     DashboardTab to EveIcons.CharacterSheet,
-    SkillsTab    to EveIcons.Skills,
-    PiTab        to EveIcons.Planets,
-    JobsTab      to EveIcons.Industry,
+    SkillsTab to EveIcons.Skills,
+    PiTab to EveIcons.Planets,
+    JobsTab to EveIcons.Industry,
 )
 
 @Composable
 private fun MainApp() {
+    val hazeState = remember { HazeState() }
     TabNavigator(DashboardTab) {
-        Scaffold(bottomBar = { PodNavBar() }) {
-            CurrentTab()
+        Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().hazeSource(hazeState)) { CurrentTab() }
+            PodNavBar(modifier = Modifier.align(Alignment.BottomCenter), hazeState = hazeState)
         }
     }
 }
@@ -108,28 +118,43 @@ private fun MainApp() {
 // ── Pill nav bar ──────────────────────────────────────────────────────────────
 
 @Composable
-private fun PodNavBar() {
+private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = null) {
     val tabNavigator = LocalTabNavigator.current
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 3.dp,
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Row(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .height(64.dp)
-                .padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
+                .then(
+                    if (hazeState != null)
+                        Modifier.hazeEffect(state = hazeState, style = HazeStyle(blurRadius = 24.dp, tint = null))
+                    else Modifier
+                ),
+            color           = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+            tonalElevation  = 0.dp,
+            shadowElevation = 8.dp,
+            shape           = RoundedCornerShape(50),
         ) {
-            tabs.forEach { tab ->
-                PodNavItem(
-                    icon     = tabIcon[tab]!!,
-                    label    = tab.options.title,
-                    selected = tabNavigator.current == tab,
-                    onClick  = { tabNavigator.current = tab },
-                )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                tabs.forEach { tab ->
+                    PodNavItem(
+                        icon = tabIcon[tab]!!,
+                        label = tab.options.title,
+                        selected = tabNavigator.current == tab,
+                        onClick = { tabNavigator.current = tab },
+                    )
+                }
             }
         }
     }
@@ -144,12 +169,12 @@ private fun PodNavItem(
 ) {
     val pillColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer
-                      else         MaterialTheme.colorScheme.surface,
+        else Color.Transparent,
         label = "pill",
     )
     val contentColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary
-                      else         MaterialTheme.colorScheme.onSurfaceVariant,
+        else MaterialTheme.colorScheme.onSurfaceVariant,
         label = "content",
     )
 
@@ -158,30 +183,24 @@ private fun PodNavItem(
             .clip(RoundedCornerShape(50))
             .background(pillColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
                 tint = contentColor,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(26.dp),
             )
-            AnimatedVisibility(
-                visible = selected,
-                enter = expandHorizontally(expandFrom = Alignment.Start),
-                exit  = shrinkHorizontally(shrinkTowards = Alignment.Start),
-            ) {
-                Text(
-                    text  = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = contentColor,
-                )
-            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor,
+            )
         }
     }
 }
@@ -218,4 +237,16 @@ object JobsTab : Tab {
 
     @Composable
     override fun Content() = JobsScreen().Content()
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+@Preview
+@Composable
+private fun PodNavBarPreview() = MaterialTheme(EmberColorScheme) {
+    Surface(color = MaterialTheme.colorScheme.background) {
+        TabNavigator(DashboardTab) {
+            PodNavBar()
+        }
+    }
 }

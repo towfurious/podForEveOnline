@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package com.podforeve.tracker.auth
 
 import com.podforeve.tracker.auth.model.AuthState
@@ -6,7 +8,7 @@ import com.podforeve.tracker.platform.SecureStorageKeys
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 // Orchestrates the OAuth2 PKCE login flow.
 //

@@ -16,19 +16,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -112,11 +111,23 @@ private fun JobCard(
     ) {
         while (true) {
             value = calculator.snapshot(start, end)
-            delay(60_000) // update every minute
+            delay(60_000)
         }
     }
 
-    Card(modifier.fillMaxWidth()) {
+    val isActive    = job.status == "active" && snapshot.progress < 1.0
+    val isComplete  = job.status == "active" && snapshot.progress >= 1.0
+    val statusLabel = when {
+        isComplete -> "Complete"
+        isActive   -> "Active"
+        else       -> job.status.replaceFirstChar { it.uppercase() }
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (!isActive) 0.75f else 1f),
+    ) {
         Column(Modifier.padding(16.dp)) {
             Row(
                 Modifier.fillMaxWidth(),
@@ -140,14 +151,48 @@ private fun JobCard(
             LinearProgressIndicator(
                 progress = { snapshot.progress.toFloat() },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
+                color    = if (isActive) MaterialTheme.colorScheme.primary else Color(0xFF3FB950),
             )
             Spacer(Modifier.height(4.dp))
-            Text(
-                text  = snapshot.remaining.formatDhm(),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = when {
+                        isComplete -> "Ready to deliver"
+                        isActive   -> snapshot.remaining.formatDhm()
+                        else       -> ""
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isComplete) Color(0xFF3FB950) else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                JobStatusChip(isActive = isActive, isComplete = isComplete, label = statusLabel)
+            }
         }
+    }
+}
+
+@Composable
+private fun JobStatusChip(isActive: Boolean, isComplete: Boolean, label: String) {
+    val (bg, fg) = when {
+        isComplete -> Color(0x1F3FB950) to Color(0xFF3FB950)
+        !isActive  -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f) to
+                MaterialTheme.colorScheme.onSurfaceVariant
+        else       -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) to
+                MaterialTheme.colorScheme.primary
+    }
+    Surface(
+        color = bg,
+        shape = MaterialTheme.shapes.small,
+    ) {
+        Text(
+            text     = label,
+            style    = MaterialTheme.typography.labelSmall,
+            color    = fg,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
     }
 }
 

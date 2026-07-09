@@ -1,6 +1,9 @@
 package com.podforeve.tracker.data.remote.esi
 
 import com.podforeve.tracker.data.remote.esi.dto.EsiCharacterPublicInfoDto
+import com.podforeve.tracker.data.remote.esi.dto.EsiCharacterSkillsDto
+import com.podforeve.tracker.data.remote.esi.dto.EsiCorporationInfoDto
+import com.podforeve.tracker.data.remote.esi.dto.EsiWalletJournalEntryDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -22,4 +25,16 @@ class CharacterEsiApi(
 
     fun portraitUrl(characterId: Long, size: Int = 128): String =
         "$IMAGE_BASE/characters/$characterId/portrait?size=$size"
+
+    // GET /v4/corporations/{id}/ — public, no auth
+    suspend fun fetchCorporationInfo(corporationId: Int): EsiCorporationInfoDto =
+        publicClient.get("$ESI_BASE/v4/corporations/$corporationId/").body()
+
+    // GET /v4/characters/{id}/skills/ — requires esi-skills.read_skills.v1
+    suspend fun fetchCharacterSkills(characterId: Long): EsiCharacterSkillsDto =
+        esiClient.get("$ESI_BASE/v4/characters/$characterId/skills/").body()
+
+    // GET /v6/characters/{id}/wallet/journal/ — requires esi-wallet.read_character_wallet.v1
+    suspend fun fetchWalletJournal(characterId: Long): List<EsiWalletJournalEntryDto> =
+        esiClient.get("$ESI_BASE/v6/characters/$characterId/wallet/journal/").body()
 }

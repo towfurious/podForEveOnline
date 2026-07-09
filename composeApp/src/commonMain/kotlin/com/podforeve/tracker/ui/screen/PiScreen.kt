@@ -24,8 +24,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -100,13 +102,19 @@ private fun PlanetCard(planet: Planet, now: Long, modifier: Modifier = Modifier)
         ) {
             Column(Modifier.weight(1f)) {
                 Text(planet.planetName, style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "${planet.planetType.replaceFirstChar { it.uppercase() }} · Level ${planet.upgradeLevel}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(5.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    PlanetTypeChip(planet.planetType)
+                    Text(
+                        "Level ${planet.upgradeLevel}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.height(3.dp))
                 Text(
                     planet.lastUpdateText(now),
                     style = MaterialTheme.typography.labelSmall,
@@ -139,6 +147,32 @@ private fun StatusChip(status: PlanetStatus) {
             style    = MaterialTheme.typography.labelSmall,
             color    = color,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
+    }
+}
+
+@Composable
+private fun PlanetTypeChip(type: String) {
+    val colors = when (type.lowercase()) {
+        "barren"    -> Color(0xFF2A1E10) to Color(0xFFC9841A)
+        "plasma"    -> Color(0xFF2A1015) to Color(0xFFE84030)
+        "storm"     -> Color(0xFF1A1535) to Color(0xFF7860E8)
+        "oceanic"   -> Color(0xFF0E2035) to Color(0xFF2090D8)
+        "temperate" -> Color(0xFF102015) to Color(0xFF40A060)
+        "lava"      -> Color(0xFF251010) to Color(0xFFC02010)
+        "ice"       -> Color(0xFF101830) to Color(0xFF50A8E0)
+        "gas"       -> Color(0xFF1C2210) to Color(0xFF9AB020)
+        else        -> MaterialTheme.colorScheme.surfaceContainerHighest to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(
+        color = colors.first,
+        shape = RoundedCornerShape(50),
+    ) {
+        Text(
+            text     = type.replaceFirstChar { it.uppercase() },
+            style    = MaterialTheme.typography.labelSmall,
+            color    = colors.second,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
         )
     }
 }

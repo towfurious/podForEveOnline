@@ -10,8 +10,10 @@ import com.podforeve.tracker.data.repository.CharacterRepository
 import com.podforeve.tracker.data.repository.SkillQueueRepository
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.domain.model.WalletJournalEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -24,7 +26,11 @@ data class DashboardData(
     val name: String,
     val portraitUrl: String,
     val iskBalance: Double,
-    val activeSkill: SkillQueueEntry?, // null = no skill currently training
+    val securityStatus: Double,
+    val corporationName: String,
+    val totalSp: Long,
+    val activeSkill: SkillQueueEntry?,
+    val walletJournal: List<WalletJournalEntry>,
 )
 
 class DashboardViewModel(
@@ -44,9 +50,10 @@ class DashboardViewModel(
             combine(
                 characterRepository.observeCharacter(characterId),
                 skillQueueRepository.observeSkillQueue(characterId),
-            ) { charState, queueState ->
+                characterRepository.observeWalletJournal(characterId),
+            ) { charState, queueState, journal ->
                 when {
-                    charState is UiState.Error -> charState
+                    charState is UiState.Error   -> charState
                     charState is UiState.Success -> {
                         val char = charState.data
                         val now = Clock.System.now().epochSeconds
@@ -55,10 +62,14 @@ class DashboardViewModel(
                             ?.firstOrNull { it.isTraining && !it.hasFinished(now) }
                         UiState.Success(
                             DashboardData(
-                                name        = char.name,
-                                portraitUrl = char.portraitUrl,
-                                iskBalance  = char.iskBalance,
-                                activeSkill = activeSkill,
+                                name            = char.name,
+                                portraitUrl     = char.portraitUrl,
+                                iskBalance      = char.iskBalance,
+                                securityStatus  = char.securityStatus,
+                                corporationName = char.corporationName,
+                                totalSp         = char.totalSp,
+                                activeSkill     = activeSkill,
+                                walletJournal   = journal,
                             )
                         )
                     }
@@ -73,4 +84,8 @@ class DashboardViewModel(
         )
 
     fun refresh() = refreshTrigger.update { it + 1 }
+
+    fun logout() {
+        screenModelScope.launch { authRepository.logout() }
+    }
 }

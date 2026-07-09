@@ -15,6 +15,7 @@ object EveIcons {
     val Skills: ImageVector by lazy { skillsIcon() }
     val Planets: ImageVector by lazy { planetsIcon() }
     val Industry: ImageVector by lazy { industryIcon() }
+    val Settings: ImageVector by lazy { settingsIcon() }
 }
 
 private val Black = SolidColor(Color.Black)
@@ -101,6 +102,29 @@ private fun planetsIcon() = ImageVector.Builder(
         " 4.664 3.644 10.52 5.835 16.903 5.835 13.739 0 25.093-10.079 27.151-23.244" +
         "a251.21 251.21 0 0 1-21.362 9.497"
     ),
+    fill = Black,
+).build()
+
+// Standard gear icon (Material Design settings path, 24×24 viewport).
+private fun settingsIcon() = ImageVector.Builder(
+    name = "EveIcons.Settings",
+    defaultWidth = 24.dp, defaultHeight = 24.dp,
+    viewportWidth = 24f, viewportHeight = 24f,
+).addPath(
+    pathData = addPathNodes(
+        "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58" +
+        "c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96" +
+        "c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84" +
+        "c-.24 0-.43.17-.47.41L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33" +
+        "c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58" +
+        "C4.84 11.36 4.8 11.69 4.8 12s.02.64.07.94l-2.03 1.58" +
+        "c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96" +
+        "c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84" +
+        "c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96" +
+        "c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61L19.14 12.94z" +
+        "M12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
+    ),
+    pathFillType = PathFillType.EvenOdd,
     fill = Black,
 ).build()
 

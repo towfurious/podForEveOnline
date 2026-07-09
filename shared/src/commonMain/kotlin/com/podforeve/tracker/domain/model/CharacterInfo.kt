@@ -5,4 +5,7 @@ data class CharacterInfo(
     val name: String,
     val portraitUrl: String,
     val iskBalance: Double,
+    val securityStatus: Double = 0.0,
+    val corporationName: String = "",
+    val totalSp: Long = 0L,
 )

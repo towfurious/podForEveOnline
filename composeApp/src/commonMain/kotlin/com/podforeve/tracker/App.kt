@@ -130,12 +130,13 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(50))
                 .then(
                     if (hazeState != null)
                         Modifier.hazeEffect(state = hazeState, style = HazeStyle(blurRadius = 24.dp, tint = null))
                     else Modifier
                 ),
-            color           = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+            color           = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
             tonalElevation  = 0.dp,
             shadowElevation = 8.dp,
             shape           = RoundedCornerShape(50),
@@ -144,11 +145,11 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 6.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 tabs.forEach { tab ->
                     PodNavItem(
+                        modifier = Modifier.weight(1f),
                         icon = tabIcon[tab]!!,
                         label = tab.options.title,
                         selected = tabNavigator.current == tab,
@@ -162,6 +163,7 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
 
 @Composable
 private fun PodNavItem(
+    modifier: Modifier = Modifier,
     icon: ImageVector,
     label: String,
     selected: Boolean,
@@ -179,7 +181,7 @@ private fun PodNavItem(
     )
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(50))
             .background(pillColor)
             .clickable(onClick = onClick)
@@ -188,13 +190,12 @@ private fun PodNavItem(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
                 tint = contentColor,
-                modifier = Modifier.size(26.dp),
+                modifier = Modifier.size(36.dp),
             )
             Text(
                 text = label,

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#22112F</color>
+    <color name="ember_bg">#0E0908</color>
+    <color name="ember_surface">#170D0A</color>
 </resources>

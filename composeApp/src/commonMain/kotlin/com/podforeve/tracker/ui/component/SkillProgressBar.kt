@@ -1,22 +1,23 @@
 package com.podforeve.tracker.ui.component
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.podforeve.tracker.domain.model.SkillQueueEntry
@@ -64,8 +65,8 @@ fun ActiveSkillProgressSection(
             )
         }
 
-        LinearProgressIndicator(
-            progress = { snapshot?.progress?.toFloat() ?: 0f },
+        GradientProgressBar(
+            progress = snapshot?.progress?.toFloat() ?: 0f,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp)
@@ -107,5 +108,32 @@ fun SkillQueueRow(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+fun GradientProgressBar(
+    progress: Float,
+    modifier: Modifier = Modifier,
+) {
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    Canvas(modifier) {
+        val r = CornerRadius(size.height / 2f)
+        // Track
+        drawRoundRect(color = trackColor, cornerRadius = r)
+        // Gradient fill — orange left, gold right, always spanning full width
+        if (progress > 0f) {
+            drawRoundRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFBF3A20),
+                        Color(0xFFDF7820),
+                        Color(0xFFF5D060),
+                    ),
+                ),
+                size = Size(size.width * progress.coerceIn(0f, 1f), size.height),
+                cornerRadius = r,
+            )
+        }
     }
 }

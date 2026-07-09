@@ -7,9 +7,9 @@
         NoActionBar → no title bar flicker. windowBackground black → no white flash.
     -->
     <style name="Theme.PodForEve" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowBackground">@android:color/black</item>
-        <item name="android:statusBarColor">@android:color/black</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowBackground">@color/ember_bg</item>
+        <item name="android:statusBarColor">@color/ember_bg</item>
+        <item name="android:navigationBarColor">@color/ember_surface</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

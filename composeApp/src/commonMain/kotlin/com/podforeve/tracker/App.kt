@@ -1,17 +1,29 @@
 package com.podforeve.tracker
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import com.podforeve.tracker.ui.icon.EveIcons
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,40 +31,41 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.podforeve.tracker.auth.AuthRepository
-import com.podforeve.tracker.ui.component.PodSplashScreen
 import com.podforeve.tracker.auth.model.AuthState
+import com.podforeve.tracker.ui.component.PodSplashScreen
 import com.podforeve.tracker.ui.screen.DashboardScreen
 import com.podforeve.tracker.ui.screen.JobsScreen
 import com.podforeve.tracker.ui.screen.LoginScreen
 import com.podforeve.tracker.ui.screen.PiScreen
 import com.podforeve.tracker.ui.screen.SkillsScreen
+import com.podforeve.tracker.ui.theme.EmberColorScheme
 import org.koin.mp.KoinPlatform.getKoin
 
-// Root Composable. Dark M3 theme per [[ADR-002 - Material 3 Dark Default]].
-// Auth gate: shows LoginScreen until authenticated, then the 4-tab main app.
+// Root Composable. Ember theme. Auth gate: Loading→Splash, Unauth→Login, Auth→MainApp.
 @Composable
 fun App() {
     val authRepository: AuthRepository = remember { getKoin().get() }
     val authState by authRepository.authState.collectAsState()
     var splashAnimDone by remember { mutableStateOf(false) }
 
-    // On startup: if a stored refresh token exists, state starts as Loading.
-    // Trigger a silent token restore to resolve to Authenticated or Unauthenticated.
     LaunchedEffect(Unit) {
         if (authState is AuthState.Loading) {
             authRepository.getValidAccessToken()
         }
     }
 
-    MaterialTheme(colorScheme = darkColorScheme()) {
-        // Show splash until BOTH animation finished AND auth state is resolved.
+    MaterialTheme(colorScheme = EmberColorScheme) {
         val authResolved = authState !is AuthState.Loading
         if (!splashAnimDone || !authResolved) {
             SplashScreen(onFinished = { splashAnimDone = true })
@@ -72,37 +85,103 @@ fun App() {
 @Composable
 private fun SplashScreen(onFinished: () -> Unit) = PodSplashScreen(onFinished = onFinished)
 
-// ── Main app (4-tab navigation) ───────────────────────────────────────────────
+// ── Main app ──────────────────────────────────────────────────────────────────
+
+private val tabs = listOf(DashboardTab, SkillsTab, PiTab, JobsTab)
+
+private val tabIcon: Map<Tab, ImageVector> = mapOf(
+    DashboardTab to EveIcons.CharacterSheet,
+    SkillsTab    to EveIcons.Skills,
+    PiTab        to EveIcons.Planets,
+    JobsTab      to EveIcons.Industry,
+)
 
 @Composable
 private fun MainApp() {
     TabNavigator(DashboardTab) {
-        Scaffold(
-            bottomBar = {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                    val tabNavigator = LocalTabNavigator.current
-                    listOf(DashboardTab, SkillsTab, PiTab, JobsTab).forEach { tab ->
-                        NavigationBarItem(
-                            selected = tabNavigator.current == tab,
-                            onClick = { tabNavigator.current = tab },
-                            icon = {
-                                Icon(
-                                    imageVector = when (tab) {
-                                        DashboardTab -> Icons.Default.Home
-                                        SkillsTab    -> Icons.Default.Star
-                                        PiTab        -> Icons.Default.Public
-                                        else         -> Icons.Default.DateRange
-                                    },
-                                    contentDescription = tab.options.title,
-                                )
-                            },
-                            label = { Text(tab.options.title) },
-                        )
-                    }
-                }
-            },
-        ) {
+        Scaffold(bottomBar = { PodNavBar() }) {
             CurrentTab()
+        }
+    }
+}
+
+// ── Pill nav bar ──────────────────────────────────────────────────────────────
+
+@Composable
+private fun PodNavBar() {
+    val tabNavigator = LocalTabNavigator.current
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 3.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(64.dp)
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            tabs.forEach { tab ->
+                PodNavItem(
+                    icon     = tabIcon[tab]!!,
+                    label    = tab.options.title,
+                    selected = tabNavigator.current == tab,
+                    onClick  = { tabNavigator.current = tab },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PodNavItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val pillColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer
+                      else         MaterialTheme.colorScheme.surface,
+        label = "pill",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary
+                      else         MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "content",
+    )
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(pillColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = contentColor,
+                modifier = Modifier.size(22.dp),
+            )
+            AnimatedVisibility(
+                visible = selected,
+                enter = expandHorizontally(expandFrom = Alignment.Start),
+                exit  = shrinkHorizontally(shrinkTowards = Alignment.Start),
+            ) {
+                Text(
+                    text  = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor,
+                )
+            }
         }
     }
 }

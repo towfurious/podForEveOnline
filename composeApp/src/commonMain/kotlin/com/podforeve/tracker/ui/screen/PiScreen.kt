@@ -113,14 +113,19 @@ private fun PlanetCard(planet: Planet, now: Long, modifier: Modifier = Modifier)
 
 @Composable
 private fun StatusChip(status: PlanetStatus) {
-    val (label, color) = when (status) {
-        PlanetStatus.ACTIVE           -> "Active"           to Color(0xFF388E3C)
-        PlanetStatus.NEEDS_ATTENTION  -> "Attention"        to Color(0xFFF57C00)
-        PlanetStatus.IDLE             -> "Idle"             to Color(0xFF616161)
+    val color = when (status) {
+        PlanetStatus.ACTIVE          -> MaterialTheme.colorScheme.primary
+        PlanetStatus.NEEDS_ATTENTION -> MaterialTheme.colorScheme.tertiary
+        PlanetStatus.IDLE            -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val label = when (status) {
+        PlanetStatus.ACTIVE          -> "Active"
+        PlanetStatus.NEEDS_ATTENTION -> "Attention"
+        PlanetStatus.IDLE            -> "Idle"
     }
     Surface(
-        color  = color.copy(alpha = 0.2f),
-        shape  = MaterialTheme.shapes.small,
+        color = color.copy(alpha = 0.15f),
+        shape = MaterialTheme.shapes.small,
     ) {
         Text(
             text     = label,

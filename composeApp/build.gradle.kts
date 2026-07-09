@@ -60,3 +60,8 @@ android {
     }
     buildFeatures { compose = true }
 }
+
+// ComposeViewAdapter lives in ui-tooling (not ui-tooling-preview) — needed by AS preview renderer.
+dependencies {
+    debugImplementation(libs.compose.ui.tooling)
+}

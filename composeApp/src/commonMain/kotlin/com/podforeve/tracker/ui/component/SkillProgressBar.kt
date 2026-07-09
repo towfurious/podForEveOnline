@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
-import com.podforeve.tracker.domain.usecase.formatHms
 import kotlinx.coroutines.delay
 
 // Large hero progress section for the currently-training skill.
@@ -61,7 +60,7 @@ fun ActiveSkillProgressSection(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = snapshot?.remaining?.formatHms() ?: "Paused",
+                text = snapshot?.remaining?.formatDhm() ?: "Paused",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 
 // Large hero progress section for the currently-training skill.
@@ -77,21 +78,17 @@ fun ActiveSkillProgressSection(
 }
 
 // Compact row for queue entries below the head skill.
+// Shows finishDate - startDate = this skill's own training time only (not cumulative).
 @Composable
 fun SkillQueueRow(
     entry: SkillQueueEntry,
     displayPosition: Int,
     modifier: Modifier = Modifier,
-    calculator: SkillProgressCalculator = remember { SkillProgressCalculator() },
 ) {
-    val snapshot by produceState(
-        initialValue = calculator.snapshot(entry),
-        key1 = entry.finishDate,
-    ) {
-        while (true) {
-            value = calculator.snapshot(entry)
-            delay(60_000) // queue rows only need a minute-level tick
-        }
+    val start = entry.startDate
+    val finish = entry.finishDate
+    val duration = remember(start, finish) {
+        if (start != null && finish != null) (finish - start).seconds else null
     }
 
     Row(
@@ -105,7 +102,7 @@ fun SkillQueueRow(
             style = MaterialTheme.typography.bodyMedium,
         )
         Text(
-            snapshot?.remaining?.formatDhm() ?: "Paused",
+            duration?.formatDhm() ?: "Paused",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +34,11 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.ui.theme.EmberColorScheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.SkillQueueRow
 import com.podforeve.tracker.ui.component.shimmer
@@ -103,7 +108,13 @@ private fun SkillsSuccessContent(
         itemsIndexed(rest, key = { _, e -> e.queuePosition }) { index, entry ->
             SkillQueueRow(entry = entry, displayPosition = index + 2)
         }
-        item { Spacer(Modifier.height(16.dp)) }
+        item {
+            val totalRemaining = pending.lastOrNull()?.finishDate
+                ?.let { (it - Clock.System.now().epochSeconds).seconds }
+            HorizontalDivider()
+            TotalQueueRow(totalRemaining?.formatDhm())
+            Spacer(Modifier.height(16.dp))
+        }
     }
 }
 
@@ -142,6 +153,27 @@ private fun SkillsErrorContent(message: String, onRetry: () -> Unit) {
             )
             Button(onClick = onRetry) { Text("Retry") }
         }
+    }
+}
+
+@Composable
+private fun TotalQueueRow(total: String?) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            "Total",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            total ?: "—",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

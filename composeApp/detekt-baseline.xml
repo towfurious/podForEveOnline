@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableParamOrder:App.kt$PodNavItem</ID>
+    <ID>FunctionNaming:MainViewController.kt$fun MainViewController()</ID>
+    <ID>LambdaParameterEventTrailing:App.kt$onClick</ID>
+    <ID>LambdaParameterInRestartableEffect:PodSplashScreen.kt$onFinished</ID>
+    <ID>LongMethod:DashboardScreen.kt$@Composable private fun DashboardSuccess(data: DashboardData, onLogout: () -&gt; Unit)</ID>
+    <ID>LongMethod:PodSplashScreen.kt$private fun buildBlobPath(ox: Float, oy: Float, w: Float, h: Float): Path</ID>
+    <ID>LongParameterList:PodSplashScreen.kt$( cx: Float, cy: Float, sc: Float, alpha: Float, h1w: Float, h1a: Float, h2w: Float, h2a: Float, h3w: Float, h3a: Float, cache: SplashPathCache, )</ID>
+    <ID>MatchingDeclarationName:Theme.kt$AppTheme</ID>
+    <ID>ModifierComposed:Shimmer.kt$shimmer</ID>
+    <ID>ModifierMissing:App.kt$App</ID>
+    <ID>ModifierMissing:LoginScreen.kt$LoginScreen</ID>
+    <ID>ModifierMissing:PodSplashScreen.kt$PodSplashScreen</ID>
+    <ID>ParameterNaming:App.kt$onFinished</ID>
+    <ID>ParameterNaming:PodSplashScreen.kt$onFinished</ID>
+    <ID>PreviewPublic:PodSplashScreenPreview.kt$PodSplashScreenPreview</ID>
+    <ID>UnusedParameter:JobsScreen.kt$onRetry: () -&gt; Unit</ID>
+    <ID>UnusedParameter:PiScreen.kt$onRetry: () -&gt; Unit</ID>
+    <ID>UnusedParameter:SkillsScreen.kt$onRefresh: () -&gt; Unit</ID>
+    <ID>UnusedPrivateMember:App.kt$@Preview @Composable private fun PodNavBarPreview()</ID>
+    <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewError()</ID>
+    <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewLoading()</ID>
+    <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewSuccess()</ID>
+    <ID>UnusedPrivateMember:JobsScreen.kt$@Preview @Composable private fun JobsPreviewLoading()</ID>
+    <ID>UnusedPrivateMember:JobsScreen.kt$@Preview @Composable private fun JobsPreviewSuccess()</ID>
+    <ID>UnusedPrivateMember:PiScreen.kt$@Preview @Composable private fun PiPreviewLoading()</ID>
+    <ID>UnusedPrivateMember:PiScreen.kt$@Preview @Composable private fun PiPreviewSuccess()</ID>
+    <ID>UnusedPrivateMember:SkillsScreen.kt$@Preview @Composable private fun SkillsPreviewLoading()</ID>
+    <ID>UnusedPrivateMember:SkillsScreen.kt$@Preview @Composable private fun SkillsPreviewSuccess()</ID>
+  </CurrentIssues>
+</SmellBaseline>

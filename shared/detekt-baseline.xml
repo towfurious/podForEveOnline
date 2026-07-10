@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>SwallowedException:CharacterRepository.kt$CharacterRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:AuthRepository.kt$AuthRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CharacterRepository.kt$CharacterRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:IndustryJobRepository.kt$IndustryJobRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PlanetRepository.kt$PlanetRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SkillQueueRepository.kt$SkillQueueRepository$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

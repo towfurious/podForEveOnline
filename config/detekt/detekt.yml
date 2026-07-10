@@ -1,0 +1,60 @@
+# detekt configuration for PodForEve
+# buildUponDefaultConfig: true — only overrides are listed here.
+# Run `./gradlew detektBaseline` once to snapshot existing issues.
+
+build:
+  maxIssues: 0          # fail build on any new issue above the baseline
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+# ── Complexity ────────────────────────────────────────────────────────────────
+complexity:
+  LongMethod:
+    threshold: 80                      # Composable functions run longer than normal
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 8
+    ignoreAnnotated: ["Composable"]    # content slots + modifiers = many params
+  StringLiteralDuplication:
+    active: false                   # UI strings appear in multiple places by design
+  TooManyFunctions:
+    thresholdInFiles: 40
+    thresholdInClasses: 25
+    thresholdInObjects: 25
+
+# ── Naming ────────────────────────────────────────────────────────────────────
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ["Composable"] # Composables use PascalCase
+  FunctionMaxLength:
+    active: false                   # Composable names can be descriptive
+
+# ── Potential bugs ────────────────────────────────────────────────────────────
+potential-bugs:
+  Deprecation:
+    active: false   # CMP / Voyager alpha APIs are intentionally used
+
+# ── Style ─────────────────────────────────────────────────────────────────────
+style:
+  MagicNumber:
+    active: false   # dp / sp / alpha values are idiomatic in Compose
+
+  MaxLineLength:
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+
+  ForbiddenComment:
+    active: false   # TODOs in code are fine
+
+  BracesOnIfStatements:
+    active: false   # expression-body `if` is idiomatic in Kotlin
+
+  ReturnCount:
+    max: 4
+    excludeReturnFromLambda: true
+
+  UnusedPrivateMember:
+    allowedNames: "_.*|ignored|expected"  # Compose preview helpers

@@ -1,4 +1,9 @@
 [versions]
+# Linting
+ktlint-gradle           = "12.1.2"
+detekt                  = "1.23.8"
+compose-rules           = "0.4.22"
+
 # Core
 kotlin                  = "2.4.0"
 agp                     = "9.2.0"
@@ -87,6 +92,9 @@ chucker                 = { module = "com.github.chuckerteam.chucker:library",  
 chucker-no-op           = { module = "com.github.chuckerteam.chucker:library-no-op",  version.ref = "chucker" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
 
+# Linting
+detekt-compose-rules    = { module = "io.nlopez.compose.rules:detekt",                version.ref = "compose-rules" }
+
 [plugins]
 kotlin-multiplatform     = { id = "org.jetbrains.kotlin.multiplatform",       version.ref = "kotlin" }
 kotlin-android           = { id = "org.jetbrains.kotlin.android",              version.ref = "kotlin" }
@@ -96,3 +104,5 @@ compose-compiler         = { id = "org.jetbrains.kotlin.plugin.compose",       v
 android-application      = { id = "com.android.application",                   version.ref = "agp" }
 android-library          = { id = "com.android.library",                       version.ref = "agp" }
 sqldelight               = { id = "app.cash.sqldelight",                       version.ref = "sqldelight" }
+ktlint                   = { id = "org.jlleitschuh.gradle.ktlint",             version.ref = "ktlint-gradle" }
+detekt                   = { id = "io.gitlab.arturbosch.detekt",               version.ref = "detekt" }

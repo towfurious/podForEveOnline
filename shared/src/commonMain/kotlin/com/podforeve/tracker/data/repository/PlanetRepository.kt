@@ -6,6 +6,7 @@ import com.podforeve.tracker.data.remote.esi.PlanetEsiApi
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.Planet
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -60,7 +61,7 @@ class PlanetRepository(
             val fresh = db.appDatabaseQueries.getPlanets(characterId).executeAsList()
             emit(UiState.Success(fresh.map { it.toDomain() }))
         } catch (e: Exception) {
-            if (cached.isEmpty()) emit(UiState.Error(e.message ?: "Failed to load planets"))
+            if (cached.isEmpty()) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
         }
     }
 }

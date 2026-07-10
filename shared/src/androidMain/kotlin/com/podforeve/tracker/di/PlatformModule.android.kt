@@ -5,6 +5,7 @@ import com.podforeve.tracker.data.db.DatabaseDriverFactory
 import com.podforeve.tracker.platform.SecureStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -32,10 +33,15 @@ val platformModule = module {
             engine { preconfigured = okHttp }
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             install(Logging) { level = LogLevel.HEADERS }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30_000
+                connectTimeoutMillis = 15_000
+            }
         }
     }
 
     // ESI client — Bearer token injected via AuthRepository.
+    // refreshTokens calls logout() if refresh fails so the auth gate routes to LoginScreen.
     single(esiNamed) {
         val okHttp   = get<OkHttpClient>()
         val authRepo = get<AuthRepository>()
@@ -43,13 +49,19 @@ val platformModule = module {
             engine { preconfigured = okHttp }
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             install(Logging) { level = LogLevel.HEADERS }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30_000
+                connectTimeoutMillis = 15_000
+            }
             install(Auth) {
                 bearer {
                     loadTokens {
                         authRepo.getValidAccessToken()?.let { BearerTokens(it, "") }
                     }
                     refreshTokens {
-                        authRepo.getValidAccessToken()?.let { BearerTokens(it, "") }
+                        val newToken = authRepo.getValidAccessToken()
+                        if (newToken == null) authRepo.logout()
+                        newToken?.let { BearerTokens(it, "") }
                     }
                     sendWithoutRequest { it.url.host == "esi.evetech.net" }
                 }

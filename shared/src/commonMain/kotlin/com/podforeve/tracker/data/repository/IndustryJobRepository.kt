@@ -6,6 +6,7 @@ import com.podforeve.tracker.data.remote.esi.IndustryJobEsiApi
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.IndustryJob
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.time.Clock
@@ -52,7 +53,7 @@ class IndustryJobRepository(
             val fresh = db.appDatabaseQueries.getActiveIndustryJobs(characterId).executeAsList()
             emit(UiState.Success(fresh.map { it.toDomain() }))
         } catch (e: Exception) {
-            if (cached.isEmpty()) emit(UiState.Error(e.message ?: "Failed to load jobs"))
+            if (cached.isEmpty()) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
         }
     }
 

@@ -40,6 +40,7 @@ import com.podforeve.tracker.domain.model.PlanetStatus
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.ui.theme.EmberColorScheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.podforeve.tracker.ui.component.ErrorState
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.viewmodel.PlanetViewModel
 import kotlin.time.Clock
@@ -188,14 +189,7 @@ private fun PiSkeleton() {
 }
 
 @Composable
-private fun PiError(message: String, onRetry: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
-            Button(onClick = onRetry) { Text("Retry") }
-        }
-    }
-}
+private fun PiError(message: String, onRetry: () -> Unit) = ErrorState(message, onRetry)
 
 // ── Previews ──────────────────────────────────────────────────────────────────
 

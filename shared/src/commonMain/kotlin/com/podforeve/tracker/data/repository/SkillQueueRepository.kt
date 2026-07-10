@@ -6,6 +6,7 @@ import com.podforeve.tracker.data.remote.esi.SkillQueueEsiApi
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.time.Clock
@@ -59,7 +60,7 @@ class SkillQueueRepository(
         } catch (e: Exception) {
             // Don't overwrite a successful stale emit with an error.
             if (cached.isEmpty()) {
-                emit(UiState.Error(e.message ?: "Failed to load skill queue", e))
+                emit(UiState.Error(EsiErrorMapper.userMessage(e)))
             }
         }
     }

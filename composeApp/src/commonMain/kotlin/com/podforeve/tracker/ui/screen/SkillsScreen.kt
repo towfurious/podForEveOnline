@@ -40,6 +40,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
+import com.podforeve.tracker.ui.component.ErrorState
 import com.podforeve.tracker.ui.component.SkillQueueRow
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.viewmodel.SkillQueueViewModel
@@ -142,19 +143,7 @@ private fun SkillsLoadingSkeleton() {
 }
 
 @Composable
-private fun SkillsErrorContent(message: String, onRetry: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(16.dp),
-            )
-            Button(onClick = onRetry) { Text("Retry") }
-        }
-    }
-}
+private fun SkillsErrorContent(message: String, onRetry: () -> Unit) = ErrorState(message, onRetry)
 
 @Composable
 private fun TotalQueueRow(total: String?) {

@@ -7,6 +7,7 @@ import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.CharacterInfo
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
+import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -60,7 +61,7 @@ class CharacterRepository(
                 )))
             }
         } catch (e: Exception) {
-            if (cached == null) emit(UiState.Error(e.message ?: "Failed to load character"))
+            if (cached == null) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
         }
     }
 

@@ -43,6 +43,7 @@ import com.podforeve.tracker.ui.theme.EmberColorScheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
+import com.podforeve.tracker.ui.component.ErrorState
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.viewmodel.IndustryJobViewModel
 import kotlinx.coroutines.delay
@@ -207,14 +208,7 @@ private fun JobsSkeleton() {
 }
 
 @Composable
-private fun JobsError(message: String, onRetry: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
-            Button(onClick = onRetry) { Text("Retry") }
-        }
-    }
-}
+private fun JobsError(message: String, onRetry: () -> Unit) = ErrorState(message, onRetry)
 
 // ── Previews ──────────────────────────────────────────────────────────────────
 

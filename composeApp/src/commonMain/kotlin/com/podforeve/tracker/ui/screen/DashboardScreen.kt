@@ -51,6 +51,7 @@ import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
+import com.podforeve.tracker.ui.component.ErrorState
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.icon.EveIcons
 import com.podforeve.tracker.ui.theme.EmberColorScheme
@@ -317,19 +318,7 @@ private fun DashboardSkeleton() {
 }
 
 @Composable
-private fun DashboardError(message: String, onRetry: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text     = message,
-                style    = MaterialTheme.typography.bodyMedium,
-                color    = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(16.dp),
-            )
-            Button(onClick = onRetry) { Text("Retry") }
-        }
-    }
-}
+private fun DashboardError(message: String, onRetry: () -> Unit) = ErrorState(message, onRetry)
 
 // ── Formatters ────────────────────────────────────────────────────────────────
 

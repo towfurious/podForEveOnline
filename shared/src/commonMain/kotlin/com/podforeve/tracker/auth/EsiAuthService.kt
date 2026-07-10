@@ -29,10 +29,7 @@ class EsiAuthService(private val httpClient: HttpClient) {
     ).body()
 
     // Refresh an expired access token using the stored refresh token.
-    suspend fun refreshToken(
-        refreshToken: String,
-        clientId: String = EsiConfig.CLIENT_ID,
-    ): OAuthTokens = httpClient.submitForm(
+    suspend fun refreshToken(refreshToken: String, clientId: String = EsiConfig.CLIENT_ID): OAuthTokens = httpClient.submitForm(
         url = EsiConfig.TOKEN_URL,
         formParameters = Parameters.build {
             append("grant_type", "refresh_token")
@@ -45,9 +42,10 @@ class EsiAuthService(private val httpClient: HttpClient) {
     // EVE sub format: "CHARACTER:EVE:<character_id>"
     fun extractCharacterId(accessToken: String): Long {
         val payload = accessToken.split(".").getOrNull(1) ?: error("Invalid JWT")
+
         @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
         val json = kotlin.io.encoding.Base64.UrlSafe.decode(
-            payload.padEnd((payload.length + 3) / 4 * 4, '=')
+            payload.padEnd((payload.length + 3) / 4 * 4, '='),
         ).decodeToString()
         val sub = Regex(""""sub"\s*:\s*"([^"]+)"""").find(json)?.groupValues?.get(1)
             ?: error("Missing sub claim in JWT")

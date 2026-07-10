@@ -4,16 +4,15 @@ package com.podforeve.tracker.domain.usecase
 
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 // Math-only progress computer — no network, no state, fully testable via injected Clock.
 // See wiki: [[ADR-005 - Math-Based Skill Progress]], [[Math-Based Progress Bar]]
 class SkillProgressCalculator(private val clock: Clock = Clock.System) {
 
     data class Snapshot(
-        val progress: Double,   // 0.0–1.0
+        val progress: Double, // 0.0–1.0
         val remaining: Duration,
     )
 
@@ -30,7 +29,7 @@ class SkillProgressCalculator(private val clock: Clock = Clock.System) {
         val elapsedMs = (now - start).inWholeMilliseconds.coerceIn(0L, totalMs)
         val remaining = (end - now).coerceAtLeast(Duration.ZERO)
         return Snapshot(
-            progress  = elapsedMs.toDouble() / totalMs.toDouble(),
+            progress = elapsedMs.toDouble() / totalMs.toDouble(),
             remaining = remaining,
         )
     }
@@ -45,7 +44,7 @@ fun Duration.formatHms(): String {
     return when {
         h > 0L -> "${h}h ${m}m ${s}s"
         m > 0L -> "${m}m ${s}s"
-        else   -> "${s}s"
+        else -> "${s}s"
     }
 }
 
@@ -58,6 +57,6 @@ fun Duration.formatDhm(): String {
     return when {
         d > 0L -> "${d}d ${h}h ${m}m"
         h > 0L -> "${h}h ${m}m"
-        else   -> "${m}m"
+        else -> "${m}m"
     }
 }

@@ -14,10 +14,7 @@ import kotlin.time.Instant
 
 // Stale-While-Revalidate: emit cached rows immediately, then refresh from ESI.
 // See wiki: [[Stale-While-Revalidate Cache]], [[Skill Queue]], [[ADR-005 - Math-Based Skill Progress]]
-class SkillQueueRepository(
-    private val esiApi: SkillQueueEsiApi,
-    private val db: AppDatabase,
-) {
+class SkillQueueRepository(private val esiApi: SkillQueueEsiApi, private val db: AppDatabase) {
     fun observeSkillQueue(characterId: Long): Flow<UiState<List<SkillQueueEntry>>> = flow {
         // 1. Serve stale cache immediately.
         val cached = db.appDatabaseQueries.getSkillQueue(characterId).executeAsList()
@@ -42,15 +39,15 @@ class SkillQueueRepository(
                     val name = names[dto.skillId] ?: "Skill ${dto.skillId}"
                     db.appDatabaseQueries.upsertSkillQueueEntry(
                         queue_position = dto.queuePosition.toLong(),
-                        character_id   = characterId,
-                        skill_id       = dto.skillId.toLong(),
-                        skill_name     = name,
+                        character_id = characterId,
+                        skill_id = dto.skillId.toLong(),
+                        skill_name = name,
                         finished_level = dto.finishedLevel.toLong(),
-                        start_sp       = (dto.levelStartSp ?: 0).toLong(),
-                        finish_sp      = (dto.levelEndSp ?: 0).toLong(),
-                        start_date     = dto.startDate?.toEpochSeconds(),
-                        finish_date    = dto.finishDate?.toEpochSeconds(),
-                        cached_at      = now,
+                        start_sp = (dto.levelStartSp ?: 0).toLong(),
+                        finish_sp = (dto.levelEndSp ?: 0).toLong(),
+                        start_date = dto.startDate?.toEpochSeconds(),
+                        finish_date = dto.finishDate?.toEpochSeconds(),
+                        cached_at = now,
                     )
                 }
             }
@@ -72,8 +69,8 @@ class SkillQueueRepository(
         return try {
             val type = esiApi.fetchTypeName(typeId)
             db.appDatabaseQueries.upsertSkillType(
-                type_id   = typeId.toLong(),
-                name      = type.name,
+                type_id = typeId.toLong(),
+                name = type.name,
                 cached_at = Clock.System.now().epochSeconds,
             )
             type.name
@@ -86,14 +83,14 @@ class SkillQueueRepository(
 // Extension: map SQLDelight generated row → domain model
 private fun com.podforeve.tracker.db.Skill_queue_entry.toDomain() = SkillQueueEntry(
     queuePosition = queue_position.toInt(),
-    characterId   = character_id,
-    skillId       = skill_id.toInt(),
-    skillName     = skill_name,
+    characterId = character_id,
+    skillId = skill_id.toInt(),
+    skillName = skill_name,
     finishedLevel = finished_level.toInt(),
-    startSp       = start_sp.toInt(),
-    finishSp      = finish_sp.toInt(),
-    startDate     = start_date,
-    finishDate    = finish_date,
+    startSp = start_sp.toInt(),
+    finishSp = finish_sp.toInt(),
+    startDate = start_date,
+    finishDate = finish_date,
 )
 
 private fun String.toEpochSeconds(): Long = Instant.parse(this).epochSeconds

@@ -14,10 +14,7 @@ import kotlin.time.Instant
 
 // Stale-While-Revalidate. Blueprint names cached in skill_type table (generic type name cache).
 // See wiki: [[Stale-While-Revalidate Cache]], [[Industry Job]]
-class IndustryJobRepository(
-    private val esiApi: IndustryJobEsiApi,
-    private val db: AppDatabase,
-) {
+class IndustryJobRepository(private val esiApi: IndustryJobEsiApi, private val db: AppDatabase) {
     fun observeJobs(characterId: Long): Flow<UiState<List<IndustryJob>>> = flow {
         val cached = db.appDatabaseQueries.getActiveIndustryJobs(characterId).executeAsList()
         if (cached.isNotEmpty()) {
@@ -37,15 +34,15 @@ class IndustryJobRepository(
                 db.appDatabaseQueries.clearActiveIndustryJobs(characterId)
                 dtos.forEach { dto ->
                     db.appDatabaseQueries.upsertIndustryJob(
-                        job_id         = dto.jobId.toLong(),
-                        character_id   = characterId,
-                        activity_id    = dto.activityId.toLong(),
+                        job_id = dto.jobId.toLong(),
+                        character_id = characterId,
+                        activity_id = dto.activityId.toLong(),
                         blueprint_name = names[dto.blueprintTypeId] ?: "Blueprint ${dto.blueprintTypeId}",
-                        runs           = dto.runs.toLong(),
-                        start_date     = Instant.parse(dto.startDate).epochSeconds,
-                        end_date       = Instant.parse(dto.endDate).epochSeconds,
-                        status         = dto.status,
-                        cached_at      = now,
+                        runs = dto.runs.toLong(),
+                        start_date = Instant.parse(dto.startDate).epochSeconds,
+                        end_date = Instant.parse(dto.endDate).epochSeconds,
+                        status = dto.status,
+                        cached_at = now,
                     )
                 }
             }
@@ -63,8 +60,8 @@ class IndustryJobRepository(
         return try {
             val type = esiApi.fetchTypeName(typeId)
             db.appDatabaseQueries.upsertSkillType(
-                type_id   = typeId.toLong(),
-                name      = type.name,
+                type_id = typeId.toLong(),
+                name = type.name,
                 cached_at = Clock.System.now().epochSeconds,
             )
             type.name
@@ -75,12 +72,12 @@ class IndustryJobRepository(
 }
 
 private fun com.podforeve.tracker.db.Industry_job.toDomain() = IndustryJob(
-    jobId                  = job_id.toInt(),
-    characterId            = character_id,
-    activityId             = activity_id.toInt(),
-    blueprintName          = blueprint_name,
-    runs                   = runs.toInt(),
-    startDateEpochSeconds  = start_date,
-    endDateEpochSeconds    = end_date,
-    status                 = status,
+    jobId = job_id.toInt(),
+    characterId = character_id,
+    activityId = activity_id.toInt(),
+    blueprintName = blueprint_name,
+    runs = runs.toInt(),
+    startDateEpochSeconds = start_date,
+    endDateEpochSeconds = end_date,
+    status = status,
 )

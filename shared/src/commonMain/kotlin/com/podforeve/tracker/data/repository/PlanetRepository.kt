@@ -16,10 +16,7 @@ import kotlin.time.Instant
 
 // Stale-While-Revalidate. Planet names are stable; cached names are reused across refreshes.
 // See wiki: [[Stale-While-Revalidate Cache]], [[Planet]]
-class PlanetRepository(
-    private val esiApi: PlanetEsiApi,
-    private val db: AppDatabase,
-) {
+class PlanetRepository(private val esiApi: PlanetEsiApi, private val db: AppDatabase) {
     fun observePlanets(characterId: Long): Flow<UiState<List<Planet>>> = flow {
         val cached = db.appDatabaseQueries.getPlanets(characterId).executeAsList()
         if (cached.isNotEmpty()) {
@@ -47,13 +44,13 @@ class PlanetRepository(
                 db.appDatabaseQueries.clearPlanets(characterId)
                 dtos.forEach { dto ->
                     db.appDatabaseQueries.upsertPlanet(
-                        planet_id     = dto.planetId.toLong(),
-                        character_id  = characterId,
-                        planet_name   = names[dto.planetId] ?: "Planet ${dto.planetId}",
-                        planet_type   = dto.planetType,
-                        last_update   = Instant.parse(dto.lastUpdate).epochSeconds,
+                        planet_id = dto.planetId.toLong(),
+                        character_id = characterId,
+                        planet_name = names[dto.planetId] ?: "Planet ${dto.planetId}",
+                        planet_type = dto.planetType,
+                        last_update = Instant.parse(dto.lastUpdate).epochSeconds,
                         upgrade_level = dto.upgradeLevel.toLong(),
-                        cached_at     = now,
+                        cached_at = now,
                     )
                 }
             }
@@ -67,10 +64,10 @@ class PlanetRepository(
 }
 
 private fun com.podforeve.tracker.db.Planet.toDomain() = Planet(
-    planetId               = planet_id.toInt(),
-    characterId            = character_id,
-    planetName             = planet_name,
-    planetType             = planet_type,
+    planetId = planet_id.toInt(),
+    characterId = character_id,
+    planetName = planet_name,
+    planetType = planet_type,
     lastUpdateEpochSeconds = last_update,
-    upgradeLevel           = upgrade_level.toInt(),
+    upgradeLevel = upgrade_level.toInt(),
 )

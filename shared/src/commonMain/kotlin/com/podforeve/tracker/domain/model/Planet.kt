@@ -7,7 +7,7 @@ data class Planet(
     val planetId: Int,
     val characterId: Long,
     val planetName: String,
-    val planetType: String,    // "temperate" | "barren" | "lava" | "oceanic" | "ice" | "storm" | "plasma" | "gas"
+    val planetType: String, // "temperate" | "barren" | "lava" | "oceanic" | "ice" | "storm" | "plasma" | "gas"
     val lastUpdateEpochSeconds: Long?,
     val upgradeLevel: Int,
 ) {
@@ -15,9 +15,9 @@ data class Planet(
     fun status(nowEpochSeconds: Long): PlanetStatus {
         val lu = lastUpdateEpochSeconds ?: return PlanetStatus.IDLE
         return when ((nowEpochSeconds - lu) / 3600) {
-            in 0..23  -> PlanetStatus.ACTIVE
+            in 0..23 -> PlanetStatus.ACTIVE
             in 24..71 -> PlanetStatus.NEEDS_ATTENTION
-            else      -> PlanetStatus.IDLE
+            else -> PlanetStatus.IDLE
         }
     }
 
@@ -25,9 +25,9 @@ data class Planet(
         val lu = lastUpdateEpochSeconds ?: return "Never visited"
         val age = nowEpochSeconds - lu
         return when {
-            age < 3_600  -> "${age / 60}m ago"
+            age < 3_600 -> "${age / 60}m ago"
             age < 86_400 -> "${age / 3_600}h ago"
-            else         -> "${age / 86_400}d ago"
+            else -> "${age / 86_400}d ago"
         }
     }
 }

@@ -28,28 +28,28 @@ val sharedModule = module {
     single { AppDatabase(get<DatabaseDriverFactory>().createDriver()) }
     single {
         SkillQueueEsiApi(
-            esiClient    = get(esiClient),
+            esiClient = get(esiClient),
             publicClient = get(ssoClient),
         )
     }
     single { SkillQueueRepository(get(), get()) }
     single {
         CharacterEsiApi(
-            esiClient    = get(esiClient),
+            esiClient = get(esiClient),
             publicClient = get(ssoClient),
         )
     }
     single { CharacterRepository(get(), get()) }
     single {
         PlanetEsiApi(
-            esiClient    = get(esiClient),
+            esiClient = get(esiClient),
             publicClient = get(ssoClient),
         )
     }
     single { PlanetRepository(get(), get()) }
     single {
         IndustryJobEsiApi(
-            esiClient    = get(esiClient),
+            esiClient = get(esiClient),
             publicClient = get(ssoClient),
         )
     }

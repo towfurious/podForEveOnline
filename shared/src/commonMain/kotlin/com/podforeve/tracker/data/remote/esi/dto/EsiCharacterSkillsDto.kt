@@ -4,6 +4,4 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EsiCharacterSkillsDto(
-    @SerialName("total_sp") val totalSp: Long,
-)
+data class EsiCharacterSkillsDto(@SerialName("total_sp") val totalSp: Long)

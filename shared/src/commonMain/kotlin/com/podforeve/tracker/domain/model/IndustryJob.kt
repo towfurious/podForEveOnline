@@ -12,12 +12,12 @@ data class IndustryJob(
     val status: String,
 ) {
     val activityName: String get() = when (activityId) {
-        1  -> "Manufacturing"
-        3  -> "TE Research"
-        4  -> "ME Research"
-        5  -> "Copying"
-        8  -> "Invention"
-        9  -> "Reactions"
+        1 -> "Manufacturing"
+        3 -> "TE Research"
+        4 -> "ME Research"
+        5 -> "Copying"
+        8 -> "Invention"
+        9 -> "Reactions"
         else -> "Activity $activityId"
     }
 }

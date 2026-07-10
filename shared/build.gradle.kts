@@ -58,8 +58,11 @@ android {
         val localProps = Properties()
         rootProject.file("local.properties").takeIf { it.exists() }
             ?.let { localProps.load(it.inputStream()) }
-        buildConfigField("String", "ESI_CLIENT_ID",
-            "\"${localProps.getProperty("esi.client_id", "")}\"")
+        buildConfigField(
+            "String",
+            "ESI_CLIENT_ID",
+            "\"${localProps.getProperty("esi.client_id", "")}\"",
+        )
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21

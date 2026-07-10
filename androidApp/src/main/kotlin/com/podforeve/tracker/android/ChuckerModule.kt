@@ -11,7 +11,7 @@ val chuckerModule = module {
             .addInterceptor(
                 ChuckerInterceptor.Builder(androidContext())
                     .alwaysReadResponseBody(true)
-                    .build()
+                    .build(),
             )
             .build()
     }

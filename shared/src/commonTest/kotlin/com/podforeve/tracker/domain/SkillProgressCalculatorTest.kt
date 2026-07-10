@@ -2,14 +2,14 @@ package com.podforeve.tracker.domain
 
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatHms
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 // See spec: SkillProgressCalculatorTest in [[Source - 2026-04-24 - EVE Online KMP Design Spec]]
 class SkillProgressCalculatorTest {
@@ -66,12 +66,11 @@ class SkillProgressCalculatorTest {
 
     private fun calcAt(iso: String) = SkillProgressCalculator(FixedClock(Instant.parse(iso)))
 
-    private fun fakeEntry(startDate: Long?, finishDate: Long?) =
-        com.podforeve.tracker.domain.model.SkillQueueEntry(
-            queuePosition = 0, characterId = 1L, skillId = 1, skillName = "Test",
-            finishedLevel = 1, startSp = 0, finishSp = 100,
-            startDate = startDate, finishDate = finishDate,
-        )
+    private fun fakeEntry(startDate: Long?, finishDate: Long?) = com.podforeve.tracker.domain.model.SkillQueueEntry(
+        queuePosition = 0, characterId = 1L, skillId = 1, skillName = "Test",
+        finishedLevel = 1, startSp = 0, finishSp = 100,
+        startDate = startDate, finishDate = finishDate,
+    )
 }
 
 private class FixedClock(private val instant: Instant) : Clock {

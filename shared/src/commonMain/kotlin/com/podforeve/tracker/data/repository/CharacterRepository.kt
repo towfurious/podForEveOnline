@@ -17,10 +17,7 @@ import kotlin.time.Instant
 
 // Stale-While-Revalidate: emit cached character immediately, then refresh from ESI.
 // See wiki: [[Stale-While-Revalidate Cache]], [[Character]]
-class CharacterRepository(
-    private val esiApi: CharacterEsiApi,
-    private val db: AppDatabase,
-) {
+class CharacterRepository(private val esiApi: CharacterEsiApi, private val db: AppDatabase) {
     fun observeCharacter(characterId: Long): Flow<UiState<CharacterInfo>> = flow {
         // 1. Serve stale cache immediately (new fields default to 0/"").
         val cached = db.appDatabaseQueries.getCharacter(characterId).executeAsOneOrNull()
@@ -34,31 +31,35 @@ class CharacterRepository(
         //    corp name waits on the corp id returned by public info.
         try {
             coroutineScope {
-                val infoDeferred   = async { esiApi.fetchPublicInfo(characterId) }
+                val infoDeferred = async { esiApi.fetchPublicInfo(characterId) }
                 val walletDeferred = async { esiApi.fetchWalletBalance(characterId) }
                 val skillsDeferred = async { esiApi.fetchCharacterSkills(characterId) }
-                val info   = infoDeferred.await()
+                val info = infoDeferred.await()
                 val corpDeferred = async { esiApi.fetchCorporationInfo(info.corporationId) }
                 val wallet = walletDeferred.await()
                 val skills = skillsDeferred.await()
-                val corp   = corpDeferred.await()
+                val corp = corpDeferred.await()
 
                 db.appDatabaseQueries.upsertCharacter(
                     character_id = characterId,
-                    name         = info.name,
+                    name = info.name,
                     portrait_url = esiApi.portraitUrl(characterId),
-                    isk_balance  = wallet,
-                    cached_at    = Clock.System.now().epochSeconds,
+                    isk_balance = wallet,
+                    cached_at = Clock.System.now().epochSeconds,
                 )
-                emit(UiState.Success(CharacterInfo(
-                    characterId     = characterId,
-                    name            = info.name,
-                    portraitUrl     = esiApi.portraitUrl(characterId),
-                    iskBalance      = wallet,
-                    securityStatus  = info.securityStatus,
-                    corporationName = corp.name,
-                    totalSp         = skills.totalSp,
-                )))
+                emit(
+                    UiState.Success(
+                        CharacterInfo(
+                            characterId = characterId,
+                            name = info.name,
+                            portraitUrl = esiApi.portraitUrl(characterId),
+                            iskBalance = wallet,
+                            securityStatus = info.securityStatus,
+                            corporationName = corp.name,
+                            totalSp = skills.totalSp,
+                        ),
+                    ),
+                )
             }
         } catch (e: Exception) {
             if (cached == null) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
@@ -74,9 +75,9 @@ class CharacterRepository(
                 .take(3)
                 .map { dto ->
                     WalletJournalEntry(
-                        id               = dto.id,
-                        refType          = dto.refType,
-                        amount           = dto.amount,
+                        id = dto.id,
+                        refType = dto.refType,
+                        amount = dto.amount,
                         dateEpochSeconds = Instant.parse(dto.date).epochSeconds,
                     )
                 }
@@ -89,7 +90,7 @@ class CharacterRepository(
 
 private fun com.podforeve.tracker.db.Character.toDomain() = CharacterInfo(
     characterId = character_id,
-    name        = name,
+    name = name,
     portraitUrl = portrait_url,
-    iskBalance  = isk_balance,
+    iskBalance = isk_balance,
 )

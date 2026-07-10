@@ -13,14 +13,14 @@ import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlin.time.Clock
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlin.time.Clock
 
 data class DashboardData(
     val name: String,
@@ -53,7 +53,7 @@ class DashboardViewModel(
                 characterRepository.observeWalletJournal(characterId),
             ) { charState, queueState, journal ->
                 when {
-                    charState is UiState.Error   -> charState
+                    charState is UiState.Error -> charState
                     charState is UiState.Success -> {
                         val char = charState.data
                         val now = Clock.System.now().epochSeconds
@@ -62,15 +62,15 @@ class DashboardViewModel(
                             ?.firstOrNull { it.isTraining && !it.hasFinished(now) }
                         UiState.Success(
                             DashboardData(
-                                name            = char.name,
-                                portraitUrl     = char.portraitUrl,
-                                iskBalance      = char.iskBalance,
-                                securityStatus  = char.securityStatus,
+                                name = char.name,
+                                portraitUrl = char.portraitUrl,
+                                iskBalance = char.iskBalance,
+                                securityStatus = char.securityStatus,
                                 corporationName = char.corporationName,
-                                totalSp         = char.totalSp,
-                                activeSkill     = activeSkill,
-                                walletJournal   = journal,
-                            )
+                                totalSp = char.totalSp,
+                                activeSkill = activeSkill,
+                                walletJournal = journal,
+                            ),
                         )
                     }
                     else -> UiState.Loading
@@ -78,8 +78,8 @@ class DashboardViewModel(
             }
         }
         .stateIn(
-            scope        = screenModelScope,
-            started      = SharingStarted.WhileSubscribed(5_000),
+            scope = screenModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = UiState.Loading,
         )
 

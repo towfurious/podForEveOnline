@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 // Large hero progress section for the currently-training skill.
 // Ticks every second via produceState — no network calls per tick.
@@ -80,11 +80,7 @@ fun ActiveSkillProgressSection(
 // Compact row for queue entries below the head skill.
 // Shows finishDate - startDate = this skill's own training time only (not cumulative).
 @Composable
-fun SkillQueueRow(
-    entry: SkillQueueEntry,
-    displayPosition: Int,
-    modifier: Modifier = Modifier,
-) {
+fun SkillQueueRow(entry: SkillQueueEntry, displayPosition: Int, modifier: Modifier = Modifier) {
     val start = entry.startDate
     val finish = entry.finishDate
     val duration = remember(start, finish) {
@@ -110,10 +106,7 @@ fun SkillQueueRow(
 }
 
 @Composable
-fun GradientProgressBar(
-    progress: Float,
-    modifier: Modifier = Modifier,
-) {
+fun GradientProgressBar(progress: Float, modifier: Modifier = Modifier) {
     val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
     Canvas(modifier) {
         val r = CornerRadius(size.height / 2f)

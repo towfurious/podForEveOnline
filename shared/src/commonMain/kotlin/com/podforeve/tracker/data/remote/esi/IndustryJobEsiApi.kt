@@ -9,7 +9,7 @@ import io.ktor.client.request.get
 private const val ESI_BASE = "https://esi.evetech.net"
 
 class IndustryJobEsiApi(
-    private val esiClient: HttpClient,    // auth; for character jobs
+    private val esiClient: HttpClient, // auth; for character jobs
     private val publicClient: HttpClient, // no auth; for blueprint type names
 ) {
     // GET /v1/characters/{id}/industry/jobs/ — requires esi-industry.read_character_jobs.v1
@@ -17,6 +17,5 @@ class IndustryJobEsiApi(
         esiClient.get("$ESI_BASE/v1/characters/$characterId/industry/jobs/?include_completed=false").body()
 
     // GET /v3/universe/types/{type_id}/ — public; resolves blueprint type_id → name
-    suspend fun fetchTypeName(typeId: Int): EsiUniverseTypeDto =
-        publicClient.get("$ESI_BASE/v3/universe/types/$typeId/").body()
+    suspend fun fetchTypeName(typeId: Int): EsiUniverseTypeDto = publicClient.get("$ESI_BASE/v3/universe/types/$typeId/").body()
 }

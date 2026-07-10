@@ -10,15 +10,12 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 // and code_challenge (base64url(SHA-256(verifier)) per RFC 7636 §4.2).
 class OAuthPkceHelper {
     @OptIn(ExperimentalEncodingApi::class)
-    fun generateVerifier(): String =
-        Base64.UrlSafe.encode(secureRandomBytes(32)).trimEnd('=')
+    fun generateVerifier(): String = Base64.UrlSafe.encode(secureRandomBytes(32)).trimEnd('=')
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun deriveChallenge(verifier: String): String =
-        Base64.UrlSafe.encode(sha256(verifier.encodeToByteArray())).trimEnd('=')
+    fun deriveChallenge(verifier: String): String = Base64.UrlSafe.encode(sha256(verifier.encodeToByteArray())).trimEnd('=')
 
-    fun generateState(): String =
-        secureRandomBytes(16).joinToString("") { it.toInt().and(0xFF).toString(16).padStart(2, '0') }
+    fun generateState(): String = secureRandomBytes(16).joinToString("") { it.toInt().and(0xFF).toString(16).padStart(2, '0') }
 
     fun buildAuthUrl(
         verifier: String,
@@ -40,10 +37,12 @@ class OAuthPkceHelper {
         }
     }
 
-    private fun String.encodeUrl(): String =
-        encodeToByteArray().joinToString("") { byte ->
-            val c = byte.toInt().and(0xFF).toChar()
-            if (c.isLetterOrDigit() || c in "-._~") c.toString()
-            else "%${byte.toInt().and(0xFF).toString(16).uppercase().padStart(2, '0')}"
+    private fun String.encodeUrl(): String = encodeToByteArray().joinToString("") { byte ->
+        val c = byte.toInt().and(0xFF).toChar()
+        if (c.isLetterOrDigit() || c in "-._~") {
+            c.toString()
+        } else {
+            "%${byte.toInt().and(0xFF).toString(16).uppercase().padStart(2, '0')}"
         }
+    }
 }

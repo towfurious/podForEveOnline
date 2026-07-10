@@ -5,7 +5,6 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.data.repository.IndustryJobRepository
-import com.podforeve.tracker.domain.model.IndustryJob
 import com.podforeve.tracker.domain.model.UiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,10 +14,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class IndustryJobViewModel(
-    private val repository: IndustryJobRepository,
-    private val authRepository: AuthRepository,
-) : ScreenModel {
+class IndustryJobViewModel(private val repository: IndustryJobRepository, private val authRepository: AuthRepository) : ScreenModel {
 
     private val refreshTrigger = MutableStateFlow(0)
 
@@ -31,8 +27,8 @@ class IndustryJobViewModel(
             repository.observeJobs(characterId)
         }
         .stateIn(
-            scope        = screenModelScope,
-            started      = SharingStarted.WhileSubscribed(5_000),
+            scope = screenModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = UiState.Loading,
         )
 

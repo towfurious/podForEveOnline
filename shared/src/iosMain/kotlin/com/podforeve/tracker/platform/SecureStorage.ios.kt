@@ -45,9 +45,10 @@ actual class SecureStorage {
 
     actual fun read(key: String): String? = memScoped {
         val dict = CFDictionaryCreateMutable(
-            null, 5L,
+            null,
+            5L,
             kCFTypeDictionaryKeyCallBacks.ptr,
-            kCFTypeDictionaryValueCallBacks.ptr
+            kCFTypeDictionaryValueCallBacks.ptr,
         ) ?: return@memScoped null
 
         val cfService = CFStringCreateWithCString(null, serviceName, kCFStringEncodingUTF8)
@@ -70,7 +71,9 @@ actual class SecureStorage {
             (result.value as? NSData)?.let { data ->
                 data.bytes?.reinterpret<ByteVar>()?.readBytes(data.length.toInt())?.decodeToString()
             }
-        } else null
+        } else {
+            null
+        }
     }
 
     actual fun write(key: String, value: String) {
@@ -82,10 +85,14 @@ actual class SecureStorage {
 
         memScoped {
             val dict = CFDictionaryCreateMutable(
-                null, 5L,
+                null,
+                5L,
                 kCFTypeDictionaryKeyCallBacks.ptr,
-                kCFTypeDictionaryValueCallBacks.ptr
-            ) ?: run { CFRelease(cfData); return@memScoped }
+                kCFTypeDictionaryValueCallBacks.ptr,
+            ) ?: run {
+                CFRelease(cfData)
+                return@memScoped
+            }
 
             val cfService = CFStringCreateWithCString(null, serviceName, kCFStringEncodingUTF8)
             val cfAccount = CFStringCreateWithCString(null, key, kCFStringEncodingUTF8)
@@ -108,9 +115,10 @@ actual class SecureStorage {
     actual fun delete(key: String) {
         memScoped {
             val dict = CFDictionaryCreateMutable(
-                null, 3L,
+                null,
+                3L,
                 kCFTypeDictionaryKeyCallBacks.ptr,
-                kCFTypeDictionaryValueCallBacks.ptr
+                kCFTypeDictionaryValueCallBacks.ptr,
             ) ?: return@memScoped
 
             val cfService = CFStringCreateWithCString(null, serviceName, kCFStringEncodingUTF8)

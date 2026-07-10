@@ -43,7 +43,7 @@ val platformModule = module {
     // ESI client — Bearer token injected via AuthRepository.
     // refreshTokens calls logout() if refresh fails so the auth gate routes to LoginScreen.
     single(esiNamed) {
-        val okHttp   = get<OkHttpClient>()
+        val okHttp = get<OkHttpClient>()
         val authRepo = get<AuthRepository>()
         HttpClient(OkHttp) {
             engine { preconfigured = okHttp }

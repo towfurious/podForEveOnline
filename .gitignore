@@ -13,9 +13,10 @@ local.properties
 
 # iOS
 iosApp/.build/
-*.xcworkspace/
 DerivedData/
 *.xcuserstate
+xcuserdata/
+.DS_Store
 
 # iOS secrets (never commit)
 iosApp/iosApp/Configuration/Secrets.xcconfig

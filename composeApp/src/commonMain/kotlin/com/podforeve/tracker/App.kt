@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import com.podforeve.tracker.ui.icon.EveIcons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -54,12 +52,15 @@ import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.platform.rememberHapticFeedback
 import com.podforeve.tracker.ui.component.PodSplashScreen
+import com.podforeve.tracker.ui.icon.EveIcons
 import com.podforeve.tracker.ui.screen.DashboardScreen
 import com.podforeve.tracker.ui.screen.JobsScreen
 import com.podforeve.tracker.ui.screen.LoginScreen
 import com.podforeve.tracker.ui.screen.PiScreen
 import com.podforeve.tracker.ui.screen.SkillsScreen
 import com.podforeve.tracker.ui.theme.EmberColorScheme
+import com.podforeve.tracker.ui.theme.ThemeRepository
+import com.podforeve.tracker.ui.theme.toColorScheme
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
@@ -70,7 +71,9 @@ import org.koin.mp.KoinPlatform.getKoin
 @Composable
 fun App() {
     val authRepository: AuthRepository = remember { getKoin().get() }
+    val themeRepo: ThemeRepository = remember { getKoin().get() }
     val authState by authRepository.authState.collectAsState()
+    val appTheme by themeRepo.themeFlow.collectAsState()
     var splashAnimDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -79,7 +82,7 @@ fun App() {
         }
     }
 
-    MaterialTheme(colorScheme = EmberColorScheme) {
+    MaterialTheme(colorScheme = appTheme.toColorScheme()) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
@@ -90,7 +93,8 @@ fun App() {
             } else {
                 when (authState) {
                     is AuthState.Unauthenticated,
-                    is AuthState.Error -> LoginScreen()
+                    is AuthState.Error,
+                    -> LoginScreen()
                     is AuthState.Authenticated -> MainApp()
                     else -> Unit
                 }
@@ -110,9 +114,9 @@ private val tabs = listOf(DashboardTab, SkillsTab, PiTab, JobsTab)
 
 private val tabIcon: Map<Tab, ImageVector> = mapOf(
     DashboardTab to EveIcons.CharacterSheet,
-    SkillsTab     to EveIcons.Skills,
-    PiTab         to EveIcons.Planets,
-    JobsTab       to EveIcons.Industry,
+    SkillsTab to EveIcons.Skills,
+    PiTab to EveIcons.Planets,
+    JobsTab to EveIcons.Industry,
 )
 
 @Composable
@@ -158,14 +162,16 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(50))
                 .then(
-                    if (hazeState != null)
+                    if (hazeState != null) {
                         Modifier.hazeEffect(state = hazeState, style = HazeStyle(blurRadius = 24.dp, tint = null))
-                    else Modifier
+                    } else {
+                        Modifier
+                    },
                 ),
-            color           = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
-            tonalElevation  = 0.dp,
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+            tonalElevation = 0.dp,
             shadowElevation = 8.dp,
-            shape           = RoundedCornerShape(50),
+            shape = RoundedCornerShape(50),
         ) {
             BoxWithConstraints(
                 modifier = Modifier
@@ -204,10 +210,10 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
                     tabs.forEach { tab ->
                         PodNavItem(
                             modifier = Modifier.weight(1f),
-                            icon     = tabIcon[tab]!!,
-                            label    = tab.options.title,
+                            icon = tabIcon[tab]!!,
+                            label = tab.options.title,
                             selected = tabNavigator.current == tab,
-                            onClick  = {
+                            onClick = {
                                 haptic()
                                 tabNavigator.current = tab
                             },
@@ -220,16 +226,13 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
 }
 
 @Composable
-private fun PodNavItem(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+private fun PodNavItem(modifier: Modifier = Modifier, icon: ImageVector, label: String, selected: Boolean, onClick: () -> Unit) {
     val contentColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primary
-                      else MaterialTheme.colorScheme.onSurfaceVariant,
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
         label = "content",
     )
 
@@ -242,13 +245,13 @@ private fun PodNavItem(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
-                imageVector     = icon,
+                imageVector = icon,
                 contentDescription = label,
-                tint            = contentColor,
-                modifier        = Modifier.size(36.dp),
+                tint = contentColor,
+                modifier = Modifier.size(36.dp),
             )
             Text(
-                text  = label,
+                text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = contentColor,
             )

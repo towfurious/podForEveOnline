@@ -11,4 +11,5 @@ expect class SecureStorage {
 // Key constants shared by all platforms
 object SecureStorageKeys {
     const val REFRESH_TOKEN = "eve.refresh_token"
+    const val THEME = "app.theme"
 }

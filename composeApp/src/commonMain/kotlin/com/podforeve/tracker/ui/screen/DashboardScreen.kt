@@ -2,6 +2,9 @@
 
 package com.podforeve.tracker.ui.screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,7 +33,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,10 +54,14 @@ import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.ErrorState
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.icon.EveIcons
+import com.podforeve.tracker.ui.theme.AppTheme
 import com.podforeve.tracker.ui.theme.EmberColorScheme
+import com.podforeve.tracker.ui.theme.ThemeRepository
+import com.podforeve.tracker.ui.theme.previewColor
 import com.podforeve.tracker.ui.viewmodel.DashboardData
 import com.podforeve.tracker.ui.viewmodel.DashboardViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.mp.KoinPlatform.getKoin
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.time.Clock
@@ -69,19 +73,15 @@ class DashboardScreen : Screen {
         val viewModel = koinScreenModel<DashboardViewModel>()
         val state by viewModel.uiState.collectAsState()
         DashboardContent(
-            state    = state,
-            onRetry  = viewModel::refresh,
+            state = state,
+            onRetry = viewModel::refresh,
             onLogout = viewModel::logout,
         )
     }
 }
 
 @Composable
-private fun DashboardContent(
-    state: UiState<DashboardData>,
-    onRetry: () -> Unit,
-    onLogout: () -> Unit,
-) {
+private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit, onLogout: () -> Unit) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.statusBars,
@@ -93,7 +93,7 @@ private fun DashboardContent(
         ) {
             when (state) {
                 is UiState.Loading -> DashboardSkeleton()
-                is UiState.Error   -> DashboardError(state.message, onRetry)
+                is UiState.Error -> DashboardError(state.message, onRetry)
                 is UiState.Success -> DashboardSuccess(state.data, onLogout)
             }
         }
@@ -103,6 +103,9 @@ private fun DashboardContent(
 @Composable
 private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
     var showSettings by remember { mutableStateOf(false) }
+    var showAppearance by remember { mutableStateOf(false) }
+    val themeRepo: ThemeRepository = remember { getKoin().get() }
+    val currentTheme by themeRepo.themeFlow.collectAsState()
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val now = remember { Clock.System.now().epochSeconds }
 
@@ -115,16 +118,16 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         // ── Character header ──────────────────────────────────────────────────
         Row(verticalAlignment = Alignment.Top) {
             AsyncImage(
-                model              = data.portraitUrl,
+                model = data.portraitUrl,
                 contentDescription = "${data.name} portrait",
-                modifier           = Modifier.size(76.dp).clip(CircleShape),
+                modifier = Modifier.size(76.dp).clip(CircleShape),
             )
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f).padding(top = 2.dp)) {
                 Text(data.name, style = MaterialTheme.typography.headlineSmall)
                 if (data.corporationName.isNotEmpty()) {
                     Text(
-                        text  = data.corporationName,
+                        text = data.corporationName,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -132,11 +135,14 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
                     SecurityStatusBadge(data.securityStatus)
                 }
             }
-            IconButton(onClick = { showSettings = true }) {
+            IconButton(onClick = {
+                showSettings = true
+                showAppearance = false
+            }) {
                 Icon(
-                    imageVector        = EveIcons.Settings,
+                    imageVector = EveIcons.Settings,
                     contentDescription = "Settings",
-                    tint               = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -146,14 +152,14 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         // ── Stats row: ISK + SP ───────────────────────────────────────────────
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatCard(
-                label    = "ISK Balance",
-                value    = data.iskBalance.formatIsk(),
+                label = "ISK Balance",
+                value = data.iskBalance.formatIsk(),
                 modifier = Modifier.weight(1f),
-                isGold   = true,
+                isGold = true,
             )
             StatCard(
-                label    = "Skill Points",
-                value    = if (data.totalSp > 0L) data.totalSp.formatSp() else "—",
+                label = "Skill Points",
+                value = if (data.totalSp > 0L) data.totalSp.formatSp() else "—",
                 modifier = Modifier.weight(1f),
             )
         }
@@ -164,21 +170,21 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         Card(Modifier.fillMaxWidth()) {
             Column {
                 Text(
-                    text     = "Training",
-                    style    = MaterialTheme.typography.labelMedium,
-                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = "Training",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 16.dp, top = 12.dp),
                 )
                 if (data.activeSkill != null) {
                     ActiveSkillProgressSection(
-                        entry    = data.activeSkill,
+                        entry = data.activeSkill,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 } else {
                     Text(
-                        text     = "No skill training — open the EVE client to start a queue.",
-                        style    = MaterialTheme.typography.bodyMedium,
-                        color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = "No skill training — open the EVE client to start a queue.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(16.dp),
                     )
                 }
@@ -191,7 +197,7 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(
-                        text  = "Recent activity",
+                        text = "Recent activity",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -205,21 +211,52 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         }
     }
 
-    // ── Settings bottom sheet ─────────────────────────────────────────────────
+    // ── Settings sheet — two-page: menu → appearance ──────────────────────────
     if (showSettings) {
-        ModalBottomSheet(onDismissRequest = { showSettings = false }) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-                    .padding(bottom = 32.dp),
-            ) {
-                TextButton(
-                    onClick  = { showSettings = false; onLogout() },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors   = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) {
-                    Text("Log out", style = MaterialTheme.typography.bodyLarge)
+        ModalBottomSheet(
+            onDismissRequest = {
+                if (showAppearance) showAppearance = false else showSettings = false
+            },
+        ) {
+            Column(Modifier.fillMaxWidth().padding(bottom = 36.dp)) {
+                if (showAppearance) {
+                    // ── Appearance page ───────────────────────────────────────
+                    Row(
+                        Modifier.fillMaxWidth().padding(start = 4.dp, end = 20.dp, bottom = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IconButton(onClick = { showAppearance = false }) {
+                            Text(
+                                text = "‹",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        Text("Appearance", style = MaterialTheme.typography.titleMedium)
+                    }
+                    HorizontalDivider()
+                    AppTheme.entries.forEach { theme ->
+                        ThemeRow(
+                            theme = theme,
+                            selected = currentTheme == theme,
+                            onClick = { themeRepo.current = theme },
+                        )
+                        if (theme != AppTheme.entries.last()) {
+                            HorizontalDivider(Modifier.padding(start = 64.dp, end = 20.dp))
+                        }
+                    }
+                } else {
+                    // ── Main menu ─────────────────────────────────────────────
+                    SettingsRow(label = "Appearance", chevron = true, onClick = { showAppearance = true })
+                    HorizontalDivider(Modifier.padding(horizontal = 20.dp))
+                    SettingsRow(
+                        label = "Log out",
+                        color = MaterialTheme.colorScheme.error,
+                        onClick = {
+                            showSettings = false
+                            onLogout()
+                        },
+                    )
                 }
             }
         }
@@ -227,22 +264,17 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
 }
 
 @Composable
-private fun StatCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    isGold: Boolean = false,
-) {
+private fun StatCard(label: String, value: String, modifier: Modifier = Modifier, isGold: Boolean = false) {
     Card(modifier) {
         Column(Modifier.padding(14.dp)) {
             Text(
-                text  = label,
+                text = label,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text  = value,
+                text = value,
                 style = MaterialTheme.typography.headlineSmall,
                 color = if (isGold) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             )
@@ -255,13 +287,13 @@ private fun SecurityStatusBadge(status: Double) {
     val color = when {
         status < 0.0 -> MaterialTheme.colorScheme.error
         status >= 5.0 -> Color(0xFF3FB950)
-        else          -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.primary
     }
     Surface(color = color.copy(alpha = 0.15f), shape = RoundedCornerShape(50)) {
         Text(
-            text     = status.formatSecurityStatus(),
-            style    = MaterialTheme.typography.labelSmall,
-            color    = color,
+            text = status.formatSecurityStatus(),
+            style = MaterialTheme.typography.labelSmall,
+            color = color,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
         )
     }
@@ -277,7 +309,7 @@ private fun WalletJournalRow(entry: WalletJournalEntry, now: Long) {
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment     = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f).padding(end = 8.dp)) {
             Text(entry.displayName, style = MaterialTheme.typography.bodySmall)
@@ -288,7 +320,7 @@ private fun WalletJournalRow(entry: WalletJournalEntry, now: Long) {
             )
         }
         Text(
-            text  = amountText,
+            text = amountText,
             style = MaterialTheme.typography.bodySmall,
             color = if (isIncome) Color(0xFF3FB950) else MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -320,6 +352,67 @@ private fun DashboardSkeleton() {
 @Composable
 private fun DashboardError(message: String, onRetry: () -> Unit) = ErrorState(message, onRetry)
 
+// ── Settings sheet composables ────────────────────────────────────────────────
+
+@Composable
+private fun SettingsRow(label: String, color: Color = MaterialTheme.colorScheme.onSurface, chevron: Boolean = false, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = color,
+            modifier = Modifier.weight(1f),
+        )
+        if (chevron) {
+            Text(
+                text = "›",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeRow(theme: AppTheme, selected: Boolean, onClick: () -> Unit) {
+    val accent = theme.previewColor
+    val dotBg = if (theme == AppTheme.AMOLED) Color(0xFF000000) else accent.copy(alpha = 0.15f)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(
+            Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(dotBg)
+                .border(
+                    width = if (selected) 2.dp else 1.dp,
+                    color = if (selected) accent else accent.copy(alpha = 0.4f),
+                    shape = CircleShape,
+                ),
+        )
+        Text(
+            text = theme.displayName,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        if (selected) {
+            Text(text = "✓", color = accent, style = MaterialTheme.typography.titleMedium)
+        }
+    }
+}
+
 // ── Formatters ────────────────────────────────────────────────────────────────
 
 // ISK formatter — pure Kotlin, no JVM String.format()
@@ -327,13 +420,13 @@ private fun Double.formatIsk(): String = when {
     this >= 1e9 -> "${roundTo2dp(this / 1e9)}B ISK"
     this >= 1e6 -> "${roundTo2dp(this / 1e6)}M ISK"
     this >= 1e3 -> "${roundTo2dp(this / 1e3)}K ISK"
-    else        -> "${toLong()} ISK"
+    else -> "${toLong()} ISK"
 }
 
 private fun Long.formatSp(): String = when {
     this >= 1_000_000L -> "${roundTo2dp(this / 1_000_000.0)}M SP"
-    this >= 1_000L     -> "${roundTo2dp(this / 1_000.0)}K SP"
-    else               -> "$this SP"
+    this >= 1_000L -> "${roundTo2dp(this / 1_000.0)}K SP"
+    else -> "$this SP"
 }
 
 private fun Double.formatSecurityStatus(): String {
@@ -345,10 +438,10 @@ private fun Double.formatSecurityStatus(): String {
 private fun Long.relativeTime(nowEpochSeconds: Long): String {
     val diff = nowEpochSeconds - this
     return when {
-        diff < 60L      -> "just now"
-        diff < 3_600L   -> "${diff / 60}m ago"
-        diff < 86_400L  -> "${diff / 3_600}h ago"
-        else            -> "${diff / 86_400}d ago"
+        diff < 60L -> "just now"
+        diff < 3_600L -> "${diff / 60}m ago"
+        diff < 86_400L -> "${diff / 3_600}h ago"
+        else -> "${diff / 86_400}d ago"
     }
 }
 
@@ -369,25 +462,27 @@ private val previewSkill = SkillQueueEntry(
 )
 
 private val previewJournal = listOf(
-    WalletJournalEntry(1, "bounty_prizes",      45_000_000.0,  1_752_000_000L - 3_600),
+    WalletJournalEntry(1, "bounty_prizes", 45_000_000.0, 1_752_000_000L - 3_600),
     WalletJournalEntry(2, "market_transaction", -12_500_000.0, 1_752_000_000L - 7_200),
-    WalletJournalEntry(3, "pi_export_tax",      -890_000.0,    1_752_000_000L - 86_400),
+    WalletJournalEntry(3, "pi_export_tax", -890_000.0, 1_752_000_000L - 86_400),
 )
 
 @Preview @Composable
 private fun DashboardPreviewSuccess() = MaterialTheme(EmberColorScheme) {
     DashboardContent(
-        state = UiState.Success(DashboardData(
-            name            = "ToWFurious",
-            portraitUrl     = "",
-            iskBalance      = 99_970_000.0,
-            securityStatus  = 2.3,
-            corporationName = "Caldari Navy",
-            totalSp         = 142_500_000L,
-            activeSkill     = previewSkill,
-            walletJournal   = previewJournal,
-        )),
-        onRetry  = {},
+        state = UiState.Success(
+            DashboardData(
+                name = "ToWFurious",
+                portraitUrl = "",
+                iskBalance = 99_970_000.0,
+                securityStatus = 2.3,
+                corporationName = "Caldari Navy",
+                totalSp = 142_500_000L,
+                activeSkill = previewSkill,
+                walletJournal = previewJournal,
+            ),
+        ),
+        onRetry = {},
         onLogout = {},
     )
 }

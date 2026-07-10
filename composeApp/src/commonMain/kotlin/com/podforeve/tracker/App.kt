@@ -1,18 +1,30 @@
 package com.podforeve.tracker
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -24,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,14 +45,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
+import com.podforeve.tracker.platform.rememberHapticFeedback
 import com.podforeve.tracker.ui.component.PodSplashScreen
 import com.podforeve.tracker.ui.screen.DashboardScreen
 import com.podforeve.tracker.ui.screen.JobsScreen
@@ -54,7 +69,6 @@ import dev.chrisbanes.haze.hazeSource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.mp.KoinPlatform.getKoin
 
-// Root Composable. Ember theme. Auth gate: Loading→Splash, Unauth→Login, Auth→MainApp.
 @Composable
 fun App() {
     val authRepository: AuthRepository = remember { getKoin().get() }
@@ -79,7 +93,6 @@ fun App() {
                 when (authState) {
                     is AuthState.Unauthenticated,
                     is AuthState.Error -> LoginScreen()
-
                     is AuthState.Authenticated -> MainApp()
                     else -> Unit
                 }
@@ -99,17 +112,29 @@ private val tabs = listOf(DashboardTab, SkillsTab, PiTab, JobsTab)
 
 private val tabIcon: Map<Tab, ImageVector> = mapOf(
     DashboardTab to EveIcons.CharacterSheet,
-    SkillsTab to EveIcons.Skills,
-    PiTab to EveIcons.Planets,
-    JobsTab to EveIcons.Industry,
+    SkillsTab     to EveIcons.Skills,
+    PiTab         to EveIcons.Planets,
+    JobsTab       to EveIcons.Industry,
 )
 
 @Composable
 private fun MainApp() {
     val hazeState = remember { HazeState() }
     TabNavigator(DashboardTab) {
+        val tabNavigator = LocalTabNavigator.current
         Box(Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize().hazeSource(hazeState)) { CurrentTab() }
+            Box(Modifier.fillMaxSize().hazeSource(hazeState)) {
+                AnimatedContent(
+                    targetState = tabNavigator.current,
+                    transitionSpec = {
+                        fadeIn(tween(220)) togetherWith fadeOut(tween(160))
+                    },
+                    contentKey = { it.key },
+                    label = "tabTransition",
+                ) { tab ->
+                    tab.Content()
+                }
+            }
             PodNavBar(modifier = Modifier.align(Alignment.BottomCenter), hazeState = hazeState)
         }
     }
@@ -120,6 +145,9 @@ private fun MainApp() {
 @Composable
 private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = null) {
     val tabNavigator = LocalTabNavigator.current
+    val selectedIndex = tabs.indexOfFirst { it == tabNavigator.current }.coerceAtLeast(0)
+    val density = LocalDensity.current
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -141,20 +169,52 @@ private fun PodNavBar(modifier: Modifier = Modifier, hazeState: HazeState? = nul
             shadowElevation = 8.dp,
             shape           = RoundedCornerShape(50),
         ) {
-            Row(
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 6.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
             ) {
-                tabs.forEach { tab ->
-                    PodNavItem(
-                        modifier = Modifier.weight(1f),
-                        icon = tabIcon[tab]!!,
-                        label = tab.options.title,
-                        selected = tabNavigator.current == tab,
-                        onClick = { tabNavigator.current = tab },
+                val itemWidth = maxWidth / tabs.size
+                val pillOffsetX by animateDpAsState(
+                    targetValue = itemWidth * selectedIndex,
+                    animationSpec = spring(dampingRatio = 0.8f, stiffness = 500f),
+                    label = "pillSlide",
+                )
+                var pillHeight by remember { mutableIntStateOf(0) }
+                val pillHeightDp = with(density) { pillHeight.toDp() }
+
+                // Sliding pill — drawn first so it appears behind items
+                if (pillHeight > 0) {
+                    Box(
+                        Modifier
+                            .offset(x = pillOffsetX)
+                            .width(itemWidth)
+                            .height(pillHeightDp)
+                            .clip(RoundedCornerShape(50))
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                     )
+                }
+
+                // Nav items
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onSizeChanged { pillHeight = it.height },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val haptic = rememberHapticFeedback()
+                    tabs.forEach { tab ->
+                        PodNavItem(
+                            modifier = Modifier.weight(1f),
+                            icon     = tabIcon[tab]!!,
+                            label    = tab.options.title,
+                            selected = tabNavigator.current == tab,
+                            onClick  = {
+                                haptic()
+                                tabNavigator.current = tab
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -169,36 +229,28 @@ private fun PodNavItem(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    val pillColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer
-        else Color.Transparent,
-        label = "pill",
-    )
     val contentColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.onSurfaceVariant,
+                      else MaterialTheme.colorScheme.onSurfaceVariant,
         label = "content",
     )
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(pillColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
-                imageVector = icon,
+                imageVector     = icon,
                 contentDescription = label,
-                tint = contentColor,
-                modifier = Modifier.size(36.dp),
+                tint            = contentColor,
+                modifier        = Modifier.size(36.dp),
             )
             Text(
-                text = label,
+                text  = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = contentColor,
             )

@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -60,7 +61,7 @@ import com.podforeve.tracker.ui.theme.ThemeRepository
 import com.podforeve.tracker.ui.theme.previewColor
 import com.podforeve.tracker.ui.viewmodel.DashboardData
 import com.podforeve.tracker.ui.viewmodel.DashboardViewModel
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import org.koin.mp.KoinPlatform.getKoin
 import kotlin.math.abs
 import kotlin.math.round
@@ -312,7 +313,12 @@ private fun WalletJournalRow(entry: WalletJournalEntry, now: Long) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f).padding(end = 8.dp)) {
-            Text(entry.displayName, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = entry.description.ifEmpty { entry.displayName },
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 entry.dateEpochSeconds.relativeTime(now),
                 style = MaterialTheme.typography.labelSmall,

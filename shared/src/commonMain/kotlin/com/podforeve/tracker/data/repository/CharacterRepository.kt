@@ -67,18 +67,24 @@ class CharacterRepository(private val esiApi: CharacterEsiApi, private val db: A
     }
 
     // Never cached — always fetches fresh; emits empty immediately so combine doesn't block.
+    // Filtered ref_types that are mechanical noise rather than meaningful activity:
+    //   market_escrow — escrow releases / buy-order cancellations
+    //   planetary_construction — PI structure build costs (45+ entries for a 5-planet setup;
+    //     completely buries actual transactions like market sales)
     fun observeWalletJournal(characterId: Long): Flow<List<WalletJournalEntry>> = flow {
         emit(emptyList())
         try {
             val entries = esiApi.fetchWalletJournal(characterId)
                 .sortedByDescending { it.date }
-                .take(3)
+                .filter { it.refType !in JOURNAL_NOISE_TYPES }
+                .take(5)
                 .map { dto ->
                     WalletJournalEntry(
                         id = dto.id,
                         refType = dto.refType,
                         amount = dto.amount,
                         dateEpochSeconds = Instant.parse(dto.date).epochSeconds,
+                        description = dto.description,
                     )
                 }
             emit(entries)
@@ -87,6 +93,11 @@ class CharacterRepository(private val esiApi: CharacterEsiApi, private val db: A
         }
     }
 }
+
+private val JOURNAL_NOISE_TYPES = setOf(
+    "market_escrow",         // escrow releases / buy-order cancellations
+    "planetary_construction", // PI structure costs (45+ per setup, buries real transactions)
+)
 
 private fun com.podforeve.tracker.db.Character.toDomain() = CharacterInfo(
     characterId = character_id,

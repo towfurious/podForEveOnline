@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -41,11 +40,12 @@ import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.ui.component.ErrorState
+import com.podforeve.tracker.ui.component.GradientProgressBar
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.theme.EmberColorScheme
 import com.podforeve.tracker.ui.viewmodel.IndustryJobViewModel
 import kotlinx.coroutines.delay
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import kotlin.time.Instant
 
 // See wiki: [[Screen - Jobs]], [[Industry Job]]
@@ -135,19 +135,14 @@ private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modif
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(
-                    text = "${job.runs} run${if (job.runs > 1) "s" else ""}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                JobStatusChip(isActive = isActive, isComplete = isComplete, label = statusLabel)
             }
             Spacer(Modifier.height(4.dp))
             Text(job.blueprintName, style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { snapshot.progress.toFloat() },
-                modifier = Modifier.fillMaxWidth().height(6.dp),
-                color = if (isActive) MaterialTheme.colorScheme.primary else Color(0xFF3FB950),
+            GradientProgressBar(
+                progress = snapshot.progress.toFloat(),
+                modifier = Modifier.fillMaxWidth().height(5.dp),
             )
             Spacer(Modifier.height(4.dp))
             Row(
@@ -164,7 +159,11 @@ private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modif
                     style = MaterialTheme.typography.bodySmall,
                     color = if (isComplete) Color(0xFF3FB950) else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                JobStatusChip(isActive = isActive, isComplete = isComplete, label = statusLabel)
+                Text(
+                    text = "${job.runs} run${if (job.runs > 1) "s" else ""}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

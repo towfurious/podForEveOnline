@@ -72,7 +72,7 @@ fun ActiveSkillProgressSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp)
-                .height(8.dp),
+                .height(6.dp),
         )
     }
 }
@@ -107,7 +107,7 @@ fun SkillQueueRow(entry: SkillQueueEntry, displayPosition: Int, modifier: Modifi
 
 @Composable
 fun GradientProgressBar(progress: Float, modifier: Modifier = Modifier) {
-    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
     Canvas(modifier) {
         val r = CornerRadius(size.height / 2f)
         // Track

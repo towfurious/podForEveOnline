@@ -9,4 +9,5 @@ data class EsiWalletJournalEntryDto(
     @SerialName("date") val date: String,
     @SerialName("ref_type") val refType: String,
     @SerialName("amount") val amount: Double = 0.0,
+    @SerialName("description") val description: String = "",
 )

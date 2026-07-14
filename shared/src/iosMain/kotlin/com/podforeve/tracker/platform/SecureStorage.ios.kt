@@ -39,7 +39,7 @@ import platform.Security.kSecValueData
 // Security framework constants are CPointer<cnames.structs.__CFString> in KN 2.0 — not toll-free
 // bridged to NSString — so we use CFDictionaryCreateMutable/CFDictionarySetValue (pure CF) which
 // accept CValuesRef<*>? for both keys and values, avoiding the NSMutableDictionary type mismatch.
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
 actual class SecureStorage {
     private val serviceName = "com.podforeve.tracker"
 

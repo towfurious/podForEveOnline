@@ -39,7 +39,7 @@ import com.podforeve.tracker.ui.component.SkillQueueRow
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.theme.EmberColorScheme
 import com.podforeve.tracker.ui.viewmodel.SkillQueueViewModel
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 

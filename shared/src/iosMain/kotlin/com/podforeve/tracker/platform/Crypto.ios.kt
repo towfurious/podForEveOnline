@@ -12,7 +12,7 @@ import platform.Security.kSecRandomDefault
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun sha256(data: ByteArray): ByteArray {
-    val output = ByteArray(CC_SHA256_DIGEST_LENGTH.toInt())
+    val output = ByteArray(CC_SHA256_DIGEST_LENGTH)
     data.usePinned { inputPinned ->
         output.usePinned { outputPinned ->
             CC_SHA256(inputPinned.addressOf(0), data.size.toUInt(), outputPinned.addressOf(0).reinterpret())

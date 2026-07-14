@@ -10,6 +10,7 @@ data class Planet(
     val planetType: String, // "temperate" | "barren" | "lava" | "oceanic" | "ice" | "storm" | "plasma" | "gas"
     val lastUpdateEpochSeconds: Long?,
     val upgradeLevel: Int,
+    val colony: ColonySummary? = null,
 ) {
     // Status based on how long ago the planet was last visited in-game.
     fun status(nowEpochSeconds: Long): PlanetStatus {

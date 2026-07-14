@@ -41,10 +41,11 @@ class PlanetViewModel(private val repository: PlanetRepository, private val auth
 
     private fun loadPlanets(): Flow<UiState<List<Planet>>> {
         val characterId = (authRepository.authState.value as? AuthState.Authenticated)?.characterId
-        val source: Flow<UiState<List<Planet>>> = if (characterId != null)
+        val source: Flow<UiState<List<Planet>>> = if (characterId != null) {
             repository.observePlanets(characterId)
-        else
+        } else {
             flowOf(UiState.Error("Not authenticated"))
+        }
         return source.onCompletion { cause -> if (cause == null) _isRefreshing.value = false }
     }
 }

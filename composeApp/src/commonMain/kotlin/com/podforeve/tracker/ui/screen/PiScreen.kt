@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -54,7 +55,6 @@ import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.icon.EveIcons
 import com.podforeve.tracker.ui.theme.EmberColorScheme
 import com.podforeve.tracker.ui.viewmodel.PlanetViewModel
-import androidx.compose.ui.tooling.preview.Preview
 import kotlin.time.Clock
 
 private val ColorStopped = Color(0xFFE84030)
@@ -127,7 +127,6 @@ private fun PiSuccess(planets: List<Planet>, isRefreshing: Boolean, onRefresh: (
 private fun PlanetCard(planet: Planet, now: Long) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
-
             // ── Header row ───────────────────────────────────────────────────────
             Row(
                 Modifier.fillMaxWidth(),
@@ -186,8 +185,8 @@ private fun PlanetCard(planet: Planet, now: Long) {
                     }
                     Text(
                         text = "data ${colony.dataAgeText(now)}",
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.End,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -212,10 +211,10 @@ private fun ExtractorCountdown(expiryEpochSeconds: Long, now: Long) {
     Column(horizontalAlignment = Alignment.End) {
         Text(
             text = if (stopped) "EXTRACTORS" else "STOPS IN",
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
             letterSpacing = 0.08.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(2.dp))
         Text(
@@ -244,19 +243,20 @@ private fun FactoriesRow(running: Int, total: Int) {
             Icon(
                 imageVector = EveIcons.Settings,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.size(13.dp),
             )
             Text(
                 text = "Factories",
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
                 text = "$total",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -279,45 +279,48 @@ private fun FactoriesRow(running: Int, total: Int) {
 private fun StorageRow(label: String, fillRatio: Float, usedM3: Double, capacityM3: Double) {
     val fillColor = if (fillRatio > 0.85f) ColorStopped else MaterialTheme.colorScheme.primary
 
-    Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Column {
         Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Icon(
-                imageVector = EveIcons.Industry,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                modifier = Modifier.size(13.dp),
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(
+                    imageVector = EveIcons.Industry,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(13.dp),
+                )
+                Text(
+                    text = label,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Text(
-                text = label,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                text = "${(fillRatio * 100).toInt()}%",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = fillColor,
             )
         }
+        Spacer(Modifier.height(5.dp))
+        GradientProgressBar(
+            progress = fillRatio,
+            modifier = Modifier.fillMaxWidth().height(5.dp),
+        )
+        Spacer(Modifier.height(3.dp))
         Text(
-            text = "${(fillRatio * 100).toInt()}%",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = fillColor,
+            text = "${formatM3(usedM3)} / ${formatM3(capacityM3)} m³",
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-    Spacer(Modifier.height(5.dp))
-    GradientProgressBar(
-        progress = fillRatio,
-        modifier = Modifier.fillMaxWidth().height(5.dp),
-    )
-    Spacer(Modifier.height(3.dp))
-    Text(
-        text = "${formatM3(usedM3)} / ${formatM3(capacityM3)} m³",
-        fontSize = 11.sp,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-    )
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -403,6 +406,7 @@ private fun formatM3(value: Double): String {
 
 private val previewNow = Clock.System.now().epochSeconds
 
+@Suppress("LongMethod")
 @Preview
 @Composable
 private fun PiPreviewSuccess() = androidx.compose.material3.MaterialTheme(EmberColorScheme) {
@@ -410,7 +414,12 @@ private fun PiPreviewSuccess() = androidx.compose.material3.MaterialTheme(EmberC
         state = UiState.Success(
             listOf(
                 Planet(
-                    40132050, 0L, "Nakugard I", "barren", previewNow - 3_600, 4,
+                    40132050,
+                    0L,
+                    "Nakugard I",
+                    "barren",
+                    previewNow - 3_600,
+                    4,
                     colony = ColonySummary(
                         extractorExpiryEpochSeconds = previewNow + 2 * 86_400 + 19 * 3_600,
                         runningFactories = 3,
@@ -423,7 +432,12 @@ private fun PiPreviewSuccess() = androidx.compose.material3.MaterialTheme(EmberC
                     ),
                 ),
                 Planet(
-                    40132051, 0L, "Nakugard II", "lava", previewNow - 1_800, 4,
+                    40132051,
+                    0L,
+                    "Nakugard II",
+                    "lava",
+                    previewNow - 1_800,
+                    4,
                     colony = ColonySummary(
                         extractorExpiryEpochSeconds = previewNow + 2 * 86_400 + 19 * 3_600 - 1_600,
                         runningFactories = 3,
@@ -436,7 +450,12 @@ private fun PiPreviewSuccess() = androidx.compose.material3.MaterialTheme(EmberC
                     ),
                 ),
                 Planet(
-                    40132056, 0L, "Nakugard IV", "storm", previewNow - 2_000, 4,
+                    40132056,
+                    0L,
+                    "Nakugard IV",
+                    "storm",
+                    previewNow - 2_000,
+                    4,
                     colony = ColonySummary(
                         extractorExpiryEpochSeconds = previewNow + 3 * 86_400 + 20 * 3_600,
                         runningFactories = 3,
@@ -449,7 +468,12 @@ private fun PiPreviewSuccess() = androidx.compose.material3.MaterialTheme(EmberC
                     ),
                 ),
                 Planet(
-                    40132079, 0L, "Nakugard VI", "temperate", previewNow - 900, 4,
+                    40132079,
+                    0L,
+                    "Nakugard VI",
+                    "temperate",
+                    previewNow - 900,
+                    4,
                     colony = ColonySummary(
                         extractorExpiryEpochSeconds = previewNow + 3 * 86_400 + 21 * 3_600,
                         runningFactories = 2,

@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -45,7 +46,6 @@ import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.theme.EmberColorScheme
 import com.podforeve.tracker.ui.viewmodel.IndustryJobViewModel
 import kotlinx.coroutines.delay
-import androidx.compose.ui.tooling.preview.Preview
 import kotlin.time.Instant
 
 // See wiki: [[Screen - Jobs]], [[Industry Job]]

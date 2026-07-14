@@ -18,7 +18,6 @@
     <ID>ParameterNaming:PodSplashScreen.kt$onFinished</ID>
     <ID>PreviewPublic:PodSplashScreenPreview.kt$PodSplashScreenPreview</ID>
     <ID>UnusedParameter:JobsScreen.kt$onRetry: () -&gt; Unit</ID>
-    <ID>UnusedParameter:PiScreen.kt$onRetry: () -&gt; Unit</ID>
     <ID>UnusedParameter:SkillsScreen.kt$onRefresh: () -&gt; Unit</ID>
     <ID>UnusedPrivateMember:App.kt$@Preview @Composable private fun PodNavBarPreview()</ID>
     <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewError()</ID>
@@ -27,7 +26,7 @@
     <ID>UnusedPrivateMember:JobsScreen.kt$@Preview @Composable private fun JobsPreviewLoading()</ID>
     <ID>UnusedPrivateMember:JobsScreen.kt$@Preview @Composable private fun JobsPreviewSuccess()</ID>
     <ID>UnusedPrivateMember:PiScreen.kt$@Preview @Composable private fun PiPreviewLoading()</ID>
-    <ID>UnusedPrivateMember:PiScreen.kt$@Preview @Composable private fun PiPreviewSuccess()</ID>
+    <ID>UnusedPrivateMember:PiScreen.kt$@Suppress("LongMethod") @Preview @Composable private fun PiPreviewSuccess()</ID>
     <ID>UnusedPrivateMember:SkillsScreen.kt$@Preview @Composable private fun SkillsPreviewLoading()</ID>
     <ID>UnusedPrivateMember:SkillsScreen.kt$@Preview @Composable private fun SkillsPreviewSuccess()</ID>
   </CurrentIssues>

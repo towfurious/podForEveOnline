@@ -95,7 +95,7 @@ class CharacterRepository(private val esiApi: CharacterEsiApi, private val db: A
 }
 
 private val JOURNAL_NOISE_TYPES = setOf(
-    "market_escrow",         // escrow releases / buy-order cancellations
+    "market_escrow", // escrow releases / buy-order cancellations
     "planetary_construction", // PI structure costs (45+ per setup, buries real transactions)
 )
 

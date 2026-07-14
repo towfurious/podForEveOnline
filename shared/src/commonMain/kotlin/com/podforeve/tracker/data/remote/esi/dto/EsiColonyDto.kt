@@ -4,9 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EsiColonyDto(
-    val pins: List<EsiColonyPinDto>,
-)
+data class EsiColonyDto(val pins: List<EsiColonyPinDto>)
 
 @Serializable
 data class EsiColonyPinDto(
@@ -19,13 +17,7 @@ data class EsiColonyPinDto(
 )
 
 @Serializable
-data class EsiExtractorDetailsDto(
-    @SerialName("cycle_time") val cycleTime: Int,
-    @SerialName("product_type_id") val productTypeId: Int,
-)
+data class EsiExtractorDetailsDto(@SerialName("cycle_time") val cycleTime: Int, @SerialName("product_type_id") val productTypeId: Int)
 
 @Serializable
-data class EsiPinContentDto(
-    @SerialName("type_id") val typeId: Int,
-    @SerialName("amount") val amount: Long,
-)
+data class EsiPinContentDto(@SerialName("type_id") val typeId: Int, @SerialName("amount") val amount: Long)

@@ -3,8 +3,11 @@ package com.podforeve.tracker.platform
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import java.io.IOException
+import java.security.GeneralSecurityException
 
 actual class SecureStorage {
+    @Suppress("SwallowedException")
     private val prefs by lazy {
         val context = AppContext.instance
         fun build(): SharedPreferences {
@@ -19,13 +22,19 @@ actual class SecureStorage {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
             )
         }
+
+        // Keystore key invalidated after reinstall or biometric change —
+        // wipe the stale encrypted file and start fresh (user must re-auth).
+        fun rebuild(): SharedPreferences {
+            context.deleteSharedPreferences("eve_secure_prefs")
+            return build()
+        }
         try {
             build()
-        } catch (e: Exception) {
-            // Keystore key invalidated after reinstall or biometric change —
-            // wipe the stale encrypted file and start fresh (user must re-auth).
-            context.deleteSharedPreferences("eve_secure_prefs")
-            build()
+        } catch (e: GeneralSecurityException) {
+            rebuild()
+        } catch (e: IOException) {
+            rebuild()
         }
     }
 

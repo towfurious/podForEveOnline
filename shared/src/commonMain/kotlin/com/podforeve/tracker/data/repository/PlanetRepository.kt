@@ -41,8 +41,10 @@ class PlanetRepository(private val esiApi: PlanetEsiApi, private val db: AppData
             val (names, colonies) = coroutineScope {
                 val nameJobs = dtos.map { dto ->
                     async {
-                        dto.planetId to (cachedNames[dto.planetId.toLong()]
-                            ?: esiApi.fetchPlanetName(dto.planetId).name)
+                        dto.planetId to (
+                            cachedNames[dto.planetId.toLong()]
+                                ?: esiApi.fetchPlanetName(dto.planetId).name
+                            )
                     }
                 }
                 val colonyJobs = dtos.map { dto ->
@@ -73,9 +75,13 @@ class PlanetRepository(private val esiApi: PlanetEsiApi, private val db: AppData
             }
 
             val fresh = db.appDatabaseQueries.getPlanets(characterId).executeAsList()
-            emit(UiState.Success(fresh.map { row ->
-                row.toDomain().copy(colony = colonies[row.planet_id.toInt()])
-            }))
+            emit(
+                UiState.Success(
+                    fresh.map { row ->
+                        row.toDomain().copy(colony = colonies[row.planet_id.toInt()])
+                    },
+                ),
+            )
         } catch (e: Exception) {
             if (cached.isEmpty()) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
         }

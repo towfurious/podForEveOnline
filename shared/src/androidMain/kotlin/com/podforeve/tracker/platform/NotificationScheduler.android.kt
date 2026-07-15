@@ -2,6 +2,7 @@
 
 package com.podforeve.tracker.platform
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -12,6 +13,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import com.podforeve.tracker.platform.service.SkillTrainingService
 import kotlin.time.Clock
 
@@ -95,9 +97,12 @@ actual class NotificationScheduler(private val context: Context) {
 
         items.forEach { item -> scheduleAlarm(source, item) }
 
-        prefs.edit().putStringSet(prefsKey, items.map { it.id }.toSet()).apply()
+        prefs.edit { putStringSet(prefsKey, items.map { it.id }.toSet()) }
     }
 
+    // canScheduleExact below already gates the exact-alarm call on canScheduleExactAlarms();
+    // lint's static check can't see across that branch and flags the call anyway.
+    @SuppressLint("MissingPermission")
     private fun scheduleAlarm(source: NotificationSource, item: ScheduledCompletion) {
         val notificationId = if (source == NotificationSource.SKILL) SKILL_LIVE_NOTIFICATION_ID else item.id.hashCode()
         val intent = Intent(context, NotificationAlarmReceiver::class.java).apply {

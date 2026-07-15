@@ -42,6 +42,7 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.browser)
             implementation(libs.coil3.network.okhttp) // portrait image loading on Android
+            implementation(libs.compose.activity) // notification permission request launcher
         }
         iosMain.dependencies {
             implementation(libs.coil3.network.ktor) // portrait image loading on iOS

@@ -6,6 +6,9 @@ import com.podforeve.tracker.data.remote.esi.IndustryJobEsiApi
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.IndustryJob
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.platform.NotificationScheduler
+import com.podforeve.tracker.platform.NotificationSource
+import com.podforeve.tracker.platform.ScheduledCompletion
 import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,8 +16,12 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 // Stale-While-Revalidate. Blueprint names cached in skill_type table (generic type name cache).
-// See wiki: [[Stale-While-Revalidate Cache]], [[Industry Job]]
-class IndustryJobRepository(private val esiApi: IndustryJobEsiApi, private val db: AppDatabase) {
+// See wiki: [[Stale-While-Revalidate Cache]], [[Industry Job]], [[ADR-015 - Unified Completion Notifications]]
+class IndustryJobRepository(
+    private val esiApi: IndustryJobEsiApi,
+    private val db: AppDatabase,
+    private val notificationScheduler: NotificationScheduler,
+) {
     fun observeJobs(characterId: Long): Flow<UiState<List<IndustryJob>>> = flow {
         val cached = db.appDatabaseQueries.getActiveIndustryJobs(characterId).executeAsList()
         if (cached.isNotEmpty()) {
@@ -48,7 +55,21 @@ class IndustryJobRepository(private val esiApi: IndustryJobEsiApi, private val d
             }
 
             val fresh = db.appDatabaseQueries.getActiveIndustryJobs(characterId).executeAsList()
-            emit(UiState.Success(fresh.map { it.toDomain() }))
+            val freshJobs = fresh.map { it.toDomain() }
+
+            notificationScheduler.reconcile(
+                NotificationSource.INDUSTRY_JOB,
+                freshJobs.map {
+                    ScheduledCompletion(
+                        id = "${NotificationSource.INDUSTRY_JOB.idPrefix}${it.jobId}",
+                        epochSeconds = it.endDateEpochSeconds,
+                        title = it.blueprintName,
+                        body = "${it.activityName} complete",
+                    )
+                },
+            )
+
+            emit(UiState.Success(freshJobs))
         } catch (e: Exception) {
             if (cached.isEmpty()) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
         }

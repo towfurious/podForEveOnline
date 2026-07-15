@@ -6,6 +6,9 @@ import com.podforeve.tracker.data.remote.esi.SkillQueueEsiApi
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.platform.NotificationScheduler
+import com.podforeve.tracker.platform.NotificationSource
+import com.podforeve.tracker.platform.ScheduledCompletion
 import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -13,8 +16,13 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 // Stale-While-Revalidate: emit cached rows immediately, then refresh from ESI.
-// See wiki: [[Stale-While-Revalidate Cache]], [[Skill Queue]], [[ADR-005 - Math-Based Skill Progress]]
-class SkillQueueRepository(private val esiApi: SkillQueueEsiApi, private val db: AppDatabase) {
+// See wiki: [[Stale-While-Revalidate Cache]], [[Skill Queue]], [[ADR-005 - Math-Based Skill Progress]],
+// [[ADR-015 - Unified Completion Notifications]]
+class SkillQueueRepository(
+    private val esiApi: SkillQueueEsiApi,
+    private val db: AppDatabase,
+    private val notificationScheduler: NotificationScheduler,
+) {
     fun observeSkillQueue(characterId: Long): Flow<UiState<List<SkillQueueEntry>>> = flow {
         // 1. Serve stale cache immediately.
         val cached = db.appDatabaseQueries.getSkillQueue(characterId).executeAsList()
@@ -53,7 +61,28 @@ class SkillQueueRepository(private val esiApi: SkillQueueEsiApi, private val db:
             }
 
             val fresh = db.appDatabaseQueries.getSkillQueue(characterId).executeAsList()
-            emit(UiState.Success(fresh.map { it.toDomain() }))
+            val freshEntries = fresh.map { it.toDomain() }
+
+            // ESI doesn't immediately rotate a finished entry out of the response, so the actual
+            // head can sit behind one or more already-finished rows at queuePosition 0 — mirrors
+            // DashboardViewModel's activeSkill selection, not a bare queuePosition == 0 check.
+            // See wiki: [[Skill Queue]] business rules.
+            val head = freshEntries.firstOrNull { it.isTraining && !it.hasFinished(now) }
+            notificationScheduler.reconcile(
+                NotificationSource.SKILL,
+                listOfNotNull(
+                    head?.let {
+                        ScheduledCompletion(
+                            id = "${NotificationSource.SKILL.idPrefix}head",
+                            epochSeconds = it.finishDate!!,
+                            title = "${it.skillName} → Level ${it.finishedLevel}",
+                            body = "Training complete",
+                        )
+                    },
+                ),
+            )
+
+            emit(UiState.Success(freshEntries))
         } catch (e: Exception) {
             // Don't overwrite a successful stale emit with an error.
             if (cached.isEmpty()) {

@@ -51,6 +51,7 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
+import com.podforeve.tracker.platform.RequestNotificationPermissionEffect
 import com.podforeve.tracker.platform.rememberHapticFeedback
 import com.podforeve.tracker.ui.component.PodSplashScreen
 import com.podforeve.tracker.ui.icon.EveIcons
@@ -121,6 +122,7 @@ private val tabIcon: Map<Tab, ImageVector> = mapOf(
 
 @Composable
 private fun MainApp() {
+    RequestNotificationPermissionEffect()
     val hazeState = remember { HazeState() }
     TabNavigator(DashboardTab) {
         val tabNavigator = LocalTabNavigator.current

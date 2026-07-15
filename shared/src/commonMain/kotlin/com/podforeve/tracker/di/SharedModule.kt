@@ -32,7 +32,7 @@ val sharedModule = module {
             publicClient = get(ssoClient),
         )
     }
-    single { SkillQueueRepository(get(), get()) }
+    single { SkillQueueRepository(get(), get(), get()) }
     single {
         CharacterEsiApi(
             esiClient = get(esiClient),
@@ -46,12 +46,12 @@ val sharedModule = module {
             publicClient = get(ssoClient),
         )
     }
-    single { PlanetRepository(get(), get()) }
+    single { PlanetRepository(get(), get(), get()) }
     single {
         IndustryJobEsiApi(
             esiClient = get(esiClient),
             publicClient = get(ssoClient),
         )
     }
-    single { IndustryJobRepository(get(), get()) }
+    single { IndustryJobRepository(get(), get(), get()) }
 }

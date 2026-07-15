@@ -2,6 +2,7 @@ package com.podforeve.tracker.di
 
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.data.db.DatabaseDriverFactory
+import com.podforeve.tracker.platform.NotificationScheduler
 import com.podforeve.tracker.platform.SecureStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
@@ -20,6 +21,7 @@ import org.koin.dsl.module
 val platformModule = module {
     single { SecureStorage() }
     single { DatabaseDriverFactory() }
+    single { NotificationScheduler() }
 
     val ssoNamed = named("sso")
     val esiNamed = named("esi")

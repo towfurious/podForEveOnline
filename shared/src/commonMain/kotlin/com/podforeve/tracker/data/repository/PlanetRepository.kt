@@ -10,6 +10,9 @@ import com.podforeve.tracker.domain.model.ColonySummary
 import com.podforeve.tracker.domain.model.Planet
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.usecase.PiVolumeTable
+import com.podforeve.tracker.platform.NotificationScheduler
+import com.podforeve.tracker.platform.NotificationSource
+import com.podforeve.tracker.platform.ScheduledCompletion
 import com.podforeve.tracker.util.EsiErrorMapper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -21,8 +24,12 @@ import kotlin.time.Instant
 // Stale-While-Revalidate. Planet metadata (name, type, level) is cached in DB and reused
 // across refreshes. Colony details (extractors, factories, storage) are always fresh from ESI
 // and never persisted — they change every cycle.
-// See wiki: [[Stale-While-Revalidate Cache]], [[Planet]]
-class PlanetRepository(private val esiApi: PlanetEsiApi, private val db: AppDatabase) {
+// See wiki: [[Stale-While-Revalidate Cache]], [[Planet]], [[ADR-015 - Unified Completion Notifications]]
+class PlanetRepository(
+    private val esiApi: PlanetEsiApi,
+    private val db: AppDatabase,
+    private val notificationScheduler: NotificationScheduler,
+) {
     fun observePlanets(characterId: Long): Flow<UiState<List<Planet>>> = flow {
         val cached = db.appDatabaseQueries.getPlanets(characterId).executeAsList()
         if (cached.isNotEmpty()) {
@@ -75,13 +82,24 @@ class PlanetRepository(private val esiApi: PlanetEsiApi, private val db: AppData
             }
 
             val fresh = db.appDatabaseQueries.getPlanets(characterId).executeAsList()
-            emit(
-                UiState.Success(
-                    fresh.map { row ->
-                        row.toDomain().copy(colony = colonies[row.planet_id.toInt()])
-                    },
-                ),
+            val merged = fresh.map { row ->
+                row.toDomain().copy(colony = colonies[row.planet_id.toInt()])
+            }
+
+            notificationScheduler.reconcile(
+                NotificationSource.PI_EXTRACTOR,
+                merged.mapNotNull { planet ->
+                    val expiry = planet.colony?.extractorExpiryEpochSeconds ?: return@mapNotNull null
+                    ScheduledCompletion(
+                        id = "${NotificationSource.PI_EXTRACTOR.idPrefix}${planet.planetId}",
+                        epochSeconds = expiry,
+                        title = planet.planetName,
+                        body = "Extractor depleted",
+                    )
+                },
             )
+
+            emit(UiState.Success(merged))
         } catch (e: Exception) {
             if (cached.isEmpty()) emit(UiState.Error(EsiErrorMapper.userMessage(e)))
         }

@@ -18,3 +18,9 @@ data class SkillQueueEntry(
     // Checks if this entry is already done relative to a given clock.
     fun hasFinished(nowEpochSeconds: Long): Boolean = finishDate != null && finishDate <= nowEpochSeconds
 }
+
+// The skill actually being trained right now. NOT queuePosition == 0 — ESI doesn't immediately
+// rotate a finished entry out of position 0, so the real head can sit one or more slots behind
+// it. See wiki: [[Skill Queue]] business rules.
+fun List<SkillQueueEntry>.activeSkill(nowEpochSeconds: Long): SkillQueueEntry? =
+    firstOrNull { it.isTraining && !it.hasFinished(nowEpochSeconds) }

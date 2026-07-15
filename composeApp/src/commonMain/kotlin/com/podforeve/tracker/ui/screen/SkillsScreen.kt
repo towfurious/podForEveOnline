@@ -33,6 +33,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.domain.model.activeSkill
 import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.ErrorState
@@ -83,8 +84,12 @@ private fun SkillsSuccessContent(entries: List<SkillQueueEntry>, onRefresh: () -
         return
     }
 
-    val head = pending.first()
-    val rest = pending.drop(1)
+    // The real head is whatever's actually training, not just pending.first() — a not-yet-started
+    // entry could in principle rank ahead of it in queue order. Falls back to pending.first() when
+    // nothing is training (paused queue), so the paused banner below still has an entry to key off.
+    // See wiki: [[Skill Queue]] business rules.
+    val head = entries.activeSkill(now) ?: pending.first()
+    val rest = pending.filterNot { it.queuePosition == head.queuePosition }
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = navBottom + 80.dp)) {

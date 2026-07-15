@@ -11,6 +11,7 @@ import com.podforeve.tracker.data.repository.SkillQueueRepository
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
+import com.podforeve.tracker.domain.model.activeSkill
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,9 +58,7 @@ class DashboardViewModel(
                     charState is UiState.Success -> {
                         val char = charState.data
                         val now = Clock.System.now().epochSeconds
-                        val activeSkill = (queueState as? UiState.Success)
-                            ?.data
-                            ?.firstOrNull { it.isTraining && !it.hasFinished(now) }
+                        val active = (queueState as? UiState.Success)?.data?.activeSkill(now)
                         UiState.Success(
                             DashboardData(
                                 name = char.name,
@@ -68,7 +67,7 @@ class DashboardViewModel(
                                 securityStatus = char.securityStatus,
                                 corporationName = char.corporationName,
                                 totalSp = char.totalSp,
-                                activeSkill = activeSkill,
+                                activeSkill = active,
                                 walletJournal = journal,
                             ),
                         )

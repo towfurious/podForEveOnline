@@ -6,6 +6,7 @@ import com.podforeve.tracker.data.remote.esi.SkillQueueEsiApi
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
+import com.podforeve.tracker.domain.model.activeSkill
 import com.podforeve.tracker.platform.NotificationScheduler
 import com.podforeve.tracker.platform.NotificationSource
 import com.podforeve.tracker.platform.ScheduledCompletion
@@ -63,11 +64,7 @@ class SkillQueueRepository(
             val fresh = db.appDatabaseQueries.getSkillQueue(characterId).executeAsList()
             val freshEntries = fresh.map { it.toDomain() }
 
-            // ESI doesn't immediately rotate a finished entry out of the response, so the actual
-            // head can sit behind one or more already-finished rows at queuePosition 0 — mirrors
-            // DashboardViewModel's activeSkill selection, not a bare queuePosition == 0 check.
-            // See wiki: [[Skill Queue]] business rules.
-            val head = freshEntries.firstOrNull { it.isTraining && !it.hasFinished(now) }
+            val head = freshEntries.activeSkill(now)
             notificationScheduler.reconcile(
                 NotificationSource.SKILL,
                 listOfNotNull(

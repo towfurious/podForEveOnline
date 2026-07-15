@@ -1,15 +1,16 @@
 package com.podforeve.tracker.platform
 
+import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import java.io.IOException
 import java.security.GeneralSecurityException
 
-actual class SecureStorage {
+actual class SecureStorage(private val context: Context) {
     @Suppress("SwallowedException")
     private val prefs by lazy {
-        val context = AppContext.instance
         fun build(): SharedPreferences {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -41,10 +42,10 @@ actual class SecureStorage {
     actual fun read(key: String): String? = prefs.getString(key, null)
 
     actual fun write(key: String, value: String) {
-        prefs.edit().putString(key, value).apply()
+        prefs.edit { putString(key, value) }
     }
 
     actual fun delete(key: String) {
-        prefs.edit().remove(key).apply()
+        prefs.edit { remove(key) }
     }
 }

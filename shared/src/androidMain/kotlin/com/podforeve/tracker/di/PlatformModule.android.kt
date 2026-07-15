@@ -20,9 +20,9 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val platformModule = module {
-    single { SecureStorage() }
-    single { DatabaseDriverFactory() }
-    single { NotificationScheduler() }
+    single { SecureStorage(get()) }
+    single { DatabaseDriverFactory(get()) }
+    single { NotificationScheduler(get()) }
 
     val ssoNamed = named("sso")
     val esiNamed = named("esi")

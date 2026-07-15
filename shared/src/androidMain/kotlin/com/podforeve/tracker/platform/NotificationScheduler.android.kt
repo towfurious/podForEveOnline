@@ -45,8 +45,7 @@ internal fun ensureNotificationChannels(context: Context) {
 }
 
 // See wiki: [[ADR-015 - Unified Completion Notifications]]
-actual class NotificationScheduler {
-    private val context: Context get() = AppContext.instance
+actual class NotificationScheduler(private val context: Context) {
     private val alarmManager get() = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val prefs by lazy { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 

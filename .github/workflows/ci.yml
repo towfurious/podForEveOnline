@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-android:
+    name: Lint, static analysis, Android build + tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # No secrets needed: local.properties is optional at build time —
+      # shared/build.gradle.kts defaults ESI_CLIENT_ID to "" when the file
+      # is absent, which only affects runtime SSO login, not compilation
+      # or these unit tests.
+      - name: ktlint + detekt + Android Lint + unit tests + assembleDebug
+        run: |
+          ./gradlew \
+            ktlintCheck \
+            detekt \
+            shared:lintDebug composeApp:lintDebug androidApp:lintDebug \
+            shared:testDebugUnitTest \
+            androidApp:assembleDebug \
+            --stacktrace
+
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: podforeve-debug-apk
+          path: androidApp/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+      - name: Upload test/lint reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          retention-days: 14
+
+  ios-test:
+    name: iOS (Kotlin/Native) unit tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: shared:iosSimulatorArm64Test
+        run: ./gradlew :shared:iosSimulatorArm64Test --stacktrace
+
+      - name: Upload iOS test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-reports
+          path: shared/build/test-results/
+          retention-days: 14

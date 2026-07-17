@@ -86,6 +86,15 @@ fun LoginScreen() {
                     textAlign = TextAlign.Center,
                 )
             }
+
+            Spacer(Modifier.height(32.dp))
+
+            Text(
+                text = "EVE Online is a trademark of CCP hf. PodForEve is not affiliated with or endorsed by CCP hf.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

@@ -25,17 +25,27 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # No secrets needed: local.properties is optional at build time —
-      # shared/build.gradle.kts defaults ESI_CLIENT_ID to "" when the file
-      # is absent, which only affects runtime SSO login, not compilation
-      # or these unit tests.
+      # No secrets needed: local.properties is optional at build time — the
+      # :shared:generateEsiConfig task (see ADR-016) defaults the client id to
+      # "" when the file is absent, which only affects runtime SSO login, not
+      # compilation or these unit tests.
+      #
+      # shared/composeApp use `check` rather than naming their lint/test tasks
+      # directly — com.android.kotlin.multiplatform.library (ADR-016) is
+      # variant-agnostic, so the old *Debug-suffixed task names (lintDebug,
+      # testDebugUnitTest) no longer exist; `check` is the stable Gradle
+      # lifecycle task regardless of how the plugin names things underneath.
+      # It covers ktlint, detekt, unit tests (Android + iOS), and SQLDelight's
+      # migration-schema check for both modules. androidApp is unaffected by
+      # that migration (still a plain com.android.application) and keeps its
+      # explicit lintDebug.
       - name: ktlint + detekt + Android Lint + unit tests + assembleDebug
         run: |
           ./gradlew \
             ktlintCheck \
             detekt \
-            shared:lintDebug composeApp:lintDebug androidApp:lintDebug \
-            shared:testDebugUnitTest \
+            shared:check composeApp:check \
+            androidApp:lintDebug \
             androidApp:assembleDebug \
             --stacktrace
 

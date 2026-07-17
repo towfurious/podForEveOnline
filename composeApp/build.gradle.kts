@@ -1,12 +1,21 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
 }
 
 kotlin {
-    androidTarget()
+    android {
+        namespace = "com.podforeve.tracker"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
 
     listOf(
         iosArm64(),
@@ -50,20 +59,9 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.podforeve.tracker"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-    buildFeatures { compose = true }
-}
-
 // ComposeViewAdapter lives in ui-tooling (not ui-tooling-preview) — needed by AS preview renderer.
+// androidRuntimeClasspath replaces debugImplementation: this plugin has no build variants (no
+// "debug"), so tooling-only deps go on the runtime classpath directly instead.
 dependencies {
-    debugImplementation(libs.compose.ui.tooling)
+    "androidRuntimeClasspath"(libs.compose.ui.tooling)
 }

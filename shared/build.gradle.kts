@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.android.library)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlin.apple.privacy.manifests)
 }
 
 kotlin {
@@ -22,6 +23,12 @@ kotlin {
             baseName = "shared"
             isStatic = true
         }
+    }
+
+    // See wiki: [[Guide - App Store Launch Readiness]] (P0) and PrivacyInfo.xcprivacy's own comment
+    // for which required-reason API categories are declared and why.
+    privacyManifest {
+        embed(privacyManifest = layout.projectDirectory.file("PrivacyInfo.xcprivacy").asFile)
     }
 
     sourceSets {

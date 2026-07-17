@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.sqldelight)            apply false
     alias(libs.plugins.ktlint)                apply false
     alias(libs.plugins.detekt)                apply false
+    alias(libs.plugins.kotlin.apple.privacy.manifests) apply false
 }
 
 // Capture version-catalog entry at root scope; `libs` is not available inside subprojects {}

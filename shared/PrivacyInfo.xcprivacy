@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Two categories declared, both attributed to Compose Multiplatform's own iOS
+  runtime (Skia/skiko + Kotlin/Native), not to this app's own code:
+    - FileTimestamp (reason 0A2A.1 — "third-party SDK wraps the API, only
+      invoked through its own APIs"): Compose MP for iOS uses stat/fstat
+      internally. See https://kotl.in/rx45vh.
+    - SystemBootTime (reason 35F9.1 — measuring elapsed time / timers):
+      Kotlin/Native's runtime uses mach_absolute_time for monotonic timing
+      (animation clocks, coroutine delays). See https://kotl.in/kkrs8t.
+  Confirmed via JetBrains' own required-reason-finder tool logic (any project
+  with Compose Multiplatform for iOS — i.e. anything linking skiko.klib —
+  triggers both). A full symbol-level scan of this project's own dependency
+  klibs (Ktor, SQLDelight, coroutines, kotlinx-datetime) was attempted but hit
+  a Gradle configuration-cache incompatibility with the (community, not
+  Apple/JetBrains-official) scanning script; re-run if a third category is
+  ever suspected. No tracking, no data collection: this app has no analytics
+  SDK and no backend of its own — see [[Guide - App Store Launch Readiness]].
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>0A2A.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

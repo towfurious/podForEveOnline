@@ -25,7 +25,7 @@ sqldelight              = "2.3.2"
 koin                    = "4.1.1"
 
 # Navigation
-voyager                 = "1.1.0-alpha04"
+voyager                 = "1.1.0-beta03"
 
 # Image loading
 coil3                   = "3.5.0"
@@ -37,7 +37,7 @@ android-compileSdk      = "37"
 androidx-activity       = "1.13.0"
 androidx-core           = "1.19.0"
 androidx-lifecycle      = "2.11.0"
-androidx-security-crypto = "1.1.0-alpha06"
+androidx-security-crypto = "1.1.0"
 androidx-browser        = "1.10.0"
 chucker                 = "4.3.1"
 

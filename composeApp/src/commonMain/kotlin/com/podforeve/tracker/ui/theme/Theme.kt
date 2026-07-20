@@ -34,6 +34,12 @@ val AppTheme.previewColor: Color
         AppTheme.AMOLED -> Color(0xFF4090FF)
     }
 
+// Wallet/job "gain" colour — universally green, except Gallente whose own
+// primary IS emerald green; amber keeps the same positive-signal meaning
+// there without sitting on top of the theme's own accent.
+val AppTheme.gainColor: Color
+    get() = if (this == AppTheme.GALLENTE) Color(0xFFE0B84A) else Color(0xFF3FB950)
+
 // ─────────────────────────────────────────────────────────────────────────────
 // EMBER — Minmatar. Capsule icon gradient: yellow → amber → red → magenta → void
 // ─────────────────────────────────────────────────────────────────────────────

@@ -17,9 +17,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.podforeve.tracker.domain.model.SkillQueueEntry
@@ -108,21 +108,28 @@ fun SkillQueueRow(entry: SkillQueueEntry, displayPosition: Int, modifier: Modifi
 @Composable
 fun GradientProgressBar(progress: Float, modifier: Modifier = Modifier) {
     val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+    val primary = MaterialTheme.colorScheme.primary
+    val glow = MaterialTheme.colorScheme.onPrimaryContainer
     Canvas(modifier) {
         val r = CornerRadius(size.height / 2f)
         // Track
         drawRoundRect(color = trackColor, cornerRadius = r)
-        // Gradient fill — orange left, gold right, always spanning full width
+        // Gradient fill — theme primary to its glow tint, always spanning full width.
+        // Reused per-row in JobsScreen's scrolling list, so the glow behind the fill is
+        // layered alpha rects rather than Modifier.blur — see GlowCard.kt / ADR-017.
         if (progress > 0f) {
+            val fillWidth = size.width * progress.coerceIn(0f, 1f)
+            listOf(2.dp.toPx() to 0.22f, 4.dp.toPx() to 0.10f).forEach { (extra, alpha) ->
+                drawRoundRect(
+                    color = glow.copy(alpha = alpha),
+                    topLeft = Offset(-extra, -extra),
+                    size = Size(fillWidth + extra * 2, size.height + extra * 2),
+                    cornerRadius = CornerRadius(r.x + extra),
+                )
+            }
             drawRoundRect(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFFBF3A20),
-                        Color(0xFFDF7820),
-                        Color(0xFFF5D060),
-                    ),
-                ),
-                size = Size(size.width * progress.coerceIn(0f, 1f), size.height),
+                brush = Brush.linearGradient(colors = listOf(primary, glow)),
+                size = Size(fillWidth, size.height),
                 cornerRadius = r,
             )
         }

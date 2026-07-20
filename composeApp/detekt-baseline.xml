@@ -23,6 +23,9 @@
     <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewError()</ID>
     <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewLoading()</ID>
     <ID>UnusedPrivateMember:DashboardScreen.kt$@Preview @Composable private fun DashboardPreviewSuccess()</ID>
+    <ID>UnusedPrivateMember:GlowCard.kt$@Preview @Composable private fun GlowCardPreviewCaldari()</ID>
+    <ID>UnusedPrivateMember:GlowCard.kt$@Preview @Composable private fun GlowCardPreviewEmber()</ID>
+    <ID>UnusedPrivateMember:GlowCard.kt$@Preview @Composable private fun GlowCardPreviewGallente()</ID>
     <ID>UnusedPrivateMember:JobsScreen.kt$@Preview @Composable private fun JobsPreviewLoading()</ID>
     <ID>UnusedPrivateMember:JobsScreen.kt$@Preview @Composable private fun JobsPreviewSuccess()</ID>
     <ID>UnusedPrivateMember:PiScreen.kt$@Preview @Composable private fun PiPreviewLoading()</ID>

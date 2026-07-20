@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -41,11 +40,16 @@ import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.usecase.SkillProgressCalculator
 import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.ui.component.ErrorState
+import com.podforeve.tracker.ui.component.GlowCard
 import com.podforeve.tracker.ui.component.GradientProgressBar
 import com.podforeve.tracker.ui.component.shimmer
+import com.podforeve.tracker.ui.theme.AppTheme
 import com.podforeve.tracker.ui.theme.EmberColorScheme
+import com.podforeve.tracker.ui.theme.gainColor
+import com.podforeve.tracker.ui.theme.rememberThemeRepositoryOrNull
 import com.podforeve.tracker.ui.viewmodel.IndustryJobViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Instant
 
 // See wiki: [[Screen - Jobs]], [[Industry Job]]
@@ -87,17 +91,25 @@ private fun JobsSuccess(jobs: List<IndustryJob>, onRetry: () -> Unit) {
         return
     }
     val calculator = remember { SkillProgressCalculator() }
+    val themeRepo = rememberThemeRepositoryOrNull()
+    val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.EMBER) }).collectAsState()
+    val gain = currentTheme.gainColor
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = navBottom + 80.dp)) {
         items(jobs, key = { it.jobId }) { job ->
-            JobCard(job = job, calculator = calculator, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
+            JobCard(
+                job = job,
+                calculator = calculator,
+                gainColor = gain,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+            )
         }
         item { Spacer(Modifier.height(16.dp)) }
     }
 }
 
 @Composable
-private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modifier: Modifier = Modifier) {
+private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, gainColor: Color, modifier: Modifier = Modifier) {
     val start = remember(job.startDateEpochSeconds) { Instant.fromEpochSeconds(job.startDateEpochSeconds) }
     val end = remember(job.endDateEpochSeconds) { Instant.fromEpochSeconds(job.endDateEpochSeconds) }
 
@@ -119,7 +131,7 @@ private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modif
         else -> job.status.replaceFirstChar { it.uppercase() }
     }
 
-    Card(
+    GlowCard(
         modifier = modifier
             .fillMaxWidth()
             .alpha(if (!isActive) 0.75f else 1f),
@@ -135,7 +147,7 @@ private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modif
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                JobStatusChip(isActive = isActive, isComplete = isComplete, label = statusLabel)
+                JobStatusChip(isActive = isActive, isComplete = isComplete, label = statusLabel, gainColor = gainColor)
             }
             Spacer(Modifier.height(4.dp))
             Text(job.blueprintName, style = MaterialTheme.typography.titleMedium)
@@ -157,7 +169,7 @@ private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modif
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (isComplete) Color(0xFF3FB950) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isComplete) gainColor else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     text = "${job.runs} run${if (job.runs > 1) "s" else ""}",
@@ -170,9 +182,9 @@ private fun JobCard(job: IndustryJob, calculator: SkillProgressCalculator, modif
 }
 
 @Composable
-private fun JobStatusChip(isActive: Boolean, isComplete: Boolean, label: String) {
+private fun JobStatusChip(isActive: Boolean, isComplete: Boolean, label: String, gainColor: Color) {
     val (bg, fg) = when {
-        isComplete -> Color(0x1F3FB950) to Color(0xFF3FB950)
+        isComplete -> gainColor.copy(alpha = 0.12f) to gainColor
         !isActive -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f) to
             MaterialTheme.colorScheme.onSurfaceVariant
         else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) to

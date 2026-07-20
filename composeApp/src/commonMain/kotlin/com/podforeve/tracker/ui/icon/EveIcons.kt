@@ -1,15 +1,18 @@
 package com.podforeve.tracker.ui.icon
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
 
 // EVE Online UI icons converted from phobiacide/eve-icons SVG sprites.
-// All paths are extracted from <clipPath> elements (the clip path IS the fill shape).
-// Fills use Color.Black so Icon(tint=…) overrides as expected via BlendMode.SrcIn.
+// All paths are extracted from <clipPath> elements (the clip path IS the outline shape).
+// Rendered as open strokes (not fills) for the neon-outline treatment — see ADR-017.
+// Stroke uses Color.Black purely as a placeholder; Icon(tint=…) overrides it as expected
+// via BlendMode.SrcIn, exactly as it did when these were solid fills.
 object EveIcons {
     val CharacterSheet: ImageVector by lazy { characterSheetIcon() }
     val Skills: ImageVector by lazy { skillsIcon() }
@@ -20,6 +23,11 @@ object EveIcons {
 
 private val Black = SolidColor(Color.Black)
 private const val VP = 128f
+
+// Stroke width calibrated for the 128-unit viewport icons at their largest real render
+// size (36dp nav bar items) — see ui/App.kt PodNavItem. Round caps/joins keep the line
+// work soft rather than mechanical, matching the "glowing wireframe" reference.
+private const val EVE_STROKE_WIDTH = 6f
 
 // Hex pilot-portrait frame — composite path from charactersheet-D clip.
 private fun characterSheetIcon() = ImageVector.Builder(
@@ -67,10 +75,14 @@ private fun characterSheetIcon() = ImageVector.Builder(
             "-2.049.873-4.174 1.557-6.348 2.043a36.36 36.36 0 0 1-2.371.46" +
             " 37.1 37.1 0 0 1-5.762.451c-5.277.004-10.493-1.128-15.293-3.321",
     ),
-    fill = Black,
+    fill = null,
+    stroke = Black,
+    strokeLineWidth = EVE_STROKE_WIDTH,
+    strokeLineCap = StrokeCap.Round,
+    strokeLineJoin = StrokeJoin.Round,
 ).build()
 
-// Two stacked document pages — back (skills-C) at reduced alpha, front (skills-D) full.
+// Two stacked document pages — back (skills-C) drawn fainter, front (skills-D) full strength.
 private fun skillsIcon() = ImageVector.Builder(
     name = "EveIcons.Skills",
     defaultWidth = 24.dp,
@@ -79,11 +91,19 @@ private fun skillsIcon() = ImageVector.Builder(
     viewportHeight = VP,
 ).addPath(
     pathData = addPathNodes("M100 20.528H41.11L28 33.637v.334h9.097l8-8H94v72.397l6-6z"),
-    fill = Black,
-    fillAlpha = 0.65f,
+    fill = null,
+    stroke = Black,
+    strokeAlpha = 0.65f,
+    strokeLineWidth = EVE_STROKE_WIDTH,
+    strokeLineCap = StrokeCap.Round,
+    strokeLineJoin = StrokeJoin.Round,
 ).addPath(
     pathData = addPathNodes("M37.097 33.971H28v72.476h57.921V33.971z"),
-    fill = Black,
+    fill = null,
+    stroke = Black,
+    strokeLineWidth = EVE_STROKE_WIDTH,
+    strokeLineCap = StrokeCap.Round,
+    strokeLineJoin = StrokeJoin.Round,
 ).build()
 
 // Planet body with sweeping orbit ring.
@@ -108,10 +128,16 @@ private fun planetsIcon() = ImageVector.Builder(
             " 4.664 3.644 10.52 5.835 16.903 5.835 13.739 0 25.093-10.079 27.151-23.244" +
             "a251.21 251.21 0 0 1-21.362 9.497",
     ),
-    fill = Black,
+    fill = null,
+    stroke = Black,
+    strokeLineWidth = EVE_STROKE_WIDTH,
+    strokeLineCap = StrokeCap.Round,
+    strokeLineJoin = StrokeJoin.Round,
 ).build()
 
-// Standard gear icon (Material Design settings path, 24×24 viewport).
+// Standard gear icon (Material Design settings path, 24×24 viewport). EvenOdd fill used to
+// cut the inner circle as a fill hole; as a stroke, both the tooth outline and the inner
+// circle simply render as their own closed line loops — reads as a standard outlined gear.
 private fun settingsIcon() = ImageVector.Builder(
     name = "EveIcons.Settings",
     defaultWidth = 24.dp,
@@ -132,11 +158,14 @@ private fun settingsIcon() = ImageVector.Builder(
             "c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61L19.14 12.94z" +
             "M12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z",
     ),
-    pathFillType = PathFillType.EvenOdd,
-    fill = Black,
+    fill = null,
+    stroke = Black,
+    strokeLineWidth = 1.6f,
+    strokeLineCap = StrokeCap.Round,
+    strokeLineJoin = StrokeJoin.Round,
 ).build()
 
-// Factory building with chimney windows cut via evenodd.
+// Factory building with chimney windows — EvenOdd cutouts become their own outlined loops.
 private fun industryIcon() = ImageVector.Builder(
     name = "EveIcons.Industry",
     defaultWidth = 24.dp,
@@ -150,6 +179,9 @@ private fun industryIcon() = ImageVector.Builder(
             "m13.024-25.387v-7.368l-21.572 7.368v-7.368l-21.578 7.368" +
             "-3.29-34.796H37.23l-3.293 34.796-5.402 5.405v29.799h70.083V69.2z",
     ),
-    pathFillType = PathFillType.EvenOdd,
-    fill = Black,
+    fill = null,
+    stroke = Black,
+    strokeLineWidth = EVE_STROKE_WIDTH,
+    strokeLineCap = StrokeCap.Round,
+    strokeLineJoin = StrokeJoin.Round,
 ).build()

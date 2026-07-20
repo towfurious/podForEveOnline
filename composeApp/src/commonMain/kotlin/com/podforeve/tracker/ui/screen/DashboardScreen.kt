@@ -2,6 +2,7 @@
 
 package com.podforeve.tracker.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,7 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +42,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,15 +56,17 @@ import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.ErrorState
+import com.podforeve.tracker.ui.component.GlowCard
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.icon.EveIcons
 import com.podforeve.tracker.ui.theme.AppTheme
 import com.podforeve.tracker.ui.theme.EmberColorScheme
-import com.podforeve.tracker.ui.theme.ThemeRepository
+import com.podforeve.tracker.ui.theme.gainColor
 import com.podforeve.tracker.ui.theme.previewColor
+import com.podforeve.tracker.ui.theme.rememberThemeRepositoryOrNull
 import com.podforeve.tracker.ui.viewmodel.DashboardData
 import com.podforeve.tracker.ui.viewmodel.DashboardViewModel
-import org.koin.mp.KoinPlatform.getKoin
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.time.Clock
@@ -105,8 +109,8 @@ private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit,
 private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
     var showSettings by remember { mutableStateOf(false) }
     var showAppearance by remember { mutableStateOf(false) }
-    val themeRepo: ThemeRepository = remember { getKoin().get() }
-    val currentTheme by themeRepo.themeFlow.collectAsState()
+    val themeRepo = rememberThemeRepositoryOrNull()
+    val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.EMBER) }).collectAsState()
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val now = remember { Clock.System.now().epochSeconds }
 
@@ -117,11 +121,27 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
             .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = navBottom + 96.dp),
     ) {
         // ── Character header ──────────────────────────────────────────────────
+        val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
         Row(verticalAlignment = Alignment.Top) {
             AsyncImage(
                 model = data.portraitUrl,
                 contentDescription = "${data.name} portrait",
-                modifier = Modifier.size(76.dp).clip(CircleShape),
+                modifier = Modifier
+                    .size(76.dp)
+                    .drawBehind {
+                        // Soft glow ring behind the portrait — same filled-disc
+                        // technique as GlowCard, drawn before the clip so it bleeds
+                        // past the circle instead of being cut off. Must be filled,
+                        // not stroked, or it's too thin to read as glow.
+                        listOf(2.dp to 0.28f, 5.dp to 0.13f).forEach { (inset, alpha) ->
+                            drawCircle(
+                                color = glowColor.copy(alpha = alpha),
+                                radius = size.minDimension / 2f + inset.toPx(),
+                            )
+                        }
+                    }
+                    .clip(CircleShape)
+                    .border(1.5.dp, glowColor, CircleShape),
             )
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f).padding(top = 2.dp)) {
@@ -168,7 +188,7 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         Spacer(Modifier.height(16.dp))
 
         // ── Training card ─────────────────────────────────────────────────────
-        Card(Modifier.fillMaxWidth()) {
+        GlowCard(Modifier.fillMaxWidth()) {
             Column {
                 Text(
                     text = "Training",
@@ -195,7 +215,7 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         // ── Recent activity ───────────────────────────────────────────────────
         if (data.walletJournal.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
-            Card(Modifier.fillMaxWidth()) {
+            GlowCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(
                         text = "Recent activity",
@@ -203,9 +223,10 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(4.dp))
+                    val gain = currentTheme.gainColor
                     data.walletJournal.forEachIndexed { index, entry ->
                         if (index > 0) HorizontalDivider(Modifier.padding(vertical = 1.dp))
-                        WalletJournalRow(entry = entry, now = now)
+                        WalletJournalRow(entry = entry, now = now, gainColor = gain)
                     }
                 }
             }
@@ -240,7 +261,7 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
                         ThemeRow(
                             theme = theme,
                             selected = currentTheme == theme,
-                            onClick = { themeRepo.current = theme },
+                            onClick = { themeRepo?.current = theme },
                         )
                         if (theme != AppTheme.entries.last()) {
                             HorizontalDivider(Modifier.padding(start = 64.dp, end = 20.dp))
@@ -266,7 +287,7 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
 
 @Composable
 private fun StatCard(label: String, value: String, modifier: Modifier = Modifier, isGold: Boolean = false) {
-    Card(modifier) {
+    GlowCard(modifier) {
         Column(Modifier.padding(14.dp)) {
             Text(
                 text = label,
@@ -274,9 +295,16 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
+            // Glow reserved for the hero number (ISK balance) — Skill Points stays
+            // neutral, same hierarchy the isGold flag already expressed via colour.
+            val glowShadow = if (isGold) {
+                Shadow(color = MaterialTheme.colorScheme.onPrimaryContainer, blurRadius = 18f)
+            } else {
+                null
+            }
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall.copy(shadow = glowShadow),
                 color = if (isGold) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             )
         }
@@ -290,7 +318,11 @@ private fun SecurityStatusBadge(status: Double) {
         status >= 5.0 -> Color(0xFF3FB950)
         else -> MaterialTheme.colorScheme.primary
     }
-    Surface(color = color.copy(alpha = 0.15f), shape = RoundedCornerShape(50)) {
+    Surface(
+        color = color.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(50),
+        border = BorderStroke(0.75.dp, color.copy(alpha = 0.5f)),
+    ) {
         Text(
             text = status.formatSecurityStatus(),
             style = MaterialTheme.typography.labelSmall,
@@ -301,7 +333,7 @@ private fun SecurityStatusBadge(status: Double) {
 }
 
 @Composable
-private fun WalletJournalRow(entry: WalletJournalEntry, now: Long) {
+private fun WalletJournalRow(entry: WalletJournalEntry, now: Long, gainColor: Color) {
     val isIncome = entry.amount >= 0.0
     val absAmount = abs(entry.amount)
     val amountText = if (isIncome) "+${absAmount.formatIsk()}" else "-${absAmount.formatIsk()}"
@@ -328,7 +360,7 @@ private fun WalletJournalRow(entry: WalletJournalEntry, now: Long) {
         Text(
             text = amountText,
             style = MaterialTheme.typography.bodySmall,
-            color = if (isIncome) Color(0xFF3FB950) else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (isIncome) gainColor else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

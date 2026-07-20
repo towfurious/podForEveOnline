@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +49,7 @@ import com.podforeve.tracker.domain.model.Planet
 import com.podforeve.tracker.domain.model.PlanetStatus
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.ui.component.ErrorState
+import com.podforeve.tracker.ui.component.GlowCard
 import com.podforeve.tracker.ui.component.GradientProgressBar
 import com.podforeve.tracker.ui.component.shimmer
 import com.podforeve.tracker.ui.icon.EveIcons
@@ -125,7 +125,7 @@ private fun PiSuccess(planets: List<Planet>, isRefreshing: Boolean, onRefresh: (
 
 @Composable
 private fun PlanetCard(planet: Planet, now: Long) {
-    Card(Modifier.fillMaxWidth()) {
+    GlowCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
             // ── Header row ───────────────────────────────────────────────────────
             Row(

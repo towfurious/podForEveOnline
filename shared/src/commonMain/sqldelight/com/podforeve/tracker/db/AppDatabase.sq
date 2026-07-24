@@ -113,6 +113,15 @@ INSERT OR REPLACE INTO industry_job (
 clearActiveIndustryJobs:
 DELETE FROM industry_job WHERE character_id = :characterId AND status = 'active';
 
+-- Queries: reboot recovery (BOOT_COMPLETED re-arms notifications from cache,
+-- see [[ADR-020 - Notification Reboot Survival]]) ---------------------------
+
+getAllSkillQueueEntries:
+SELECT * FROM skill_queue_entry ORDER BY character_id, queue_position ASC;
+
+getAllActiveIndustryJobs:
+SELECT * FROM industry_job WHERE status = 'active' ORDER BY end_date ASC;
+
 -- Queries: full local cache wipe on logout --------------------------------
 -- skill_type is deliberately excluded — it's shared universe reference data
 -- (type-id → name), not data about the user's own character.

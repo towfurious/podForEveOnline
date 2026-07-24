@@ -10,6 +10,8 @@
          core alarm/clock/calendar apps and isn't appropriate here. Guarded at call time via
          AlarmManager.canScheduleExactAlarms(), falls back to inexact delivery if not granted. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Re-arms skill/job notifications from cache on reboot — see BootCompletedReceiver. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".PodForEveApplication"
@@ -52,6 +54,18 @@
         <receiver
             android:name="com.podforeve.tracker.platform.NotificationAlarmReceiver"
             android:exported="false" />
+
+        <!-- Re-arms skill/job notifications from cache after a device reboot clears
+             AlarmManager + the foreground service. See wiki: [[ADR-020 - Notification Reboot
+             Survival]]. Exported: true — BOOT_COMPLETED is a protected system broadcast, only
+             the OS can send it. -->
+        <receiver
+            android:name="com.podforeve.tracker.platform.BootCompletedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

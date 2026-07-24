@@ -1,6 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+}
+
+// Release signing — see wiki: Guide - App Store Launch Readiness (P0 #1), mirrors ADR-011's
+// local.properties pattern. keystore.properties and the .jks it points at are both gitignored;
+// neither is ever committed. Debug builds and CI (which never builds a release artifact today)
+// need neither file — only an actual release-producing task requires it, and fails loudly
+// (rather than silently emitting an unsigned artifact) if it's missing.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+val isReleaseBuild = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+
+if (isReleaseBuild) {
+    check(keystorePropertiesFile.exists()) {
+        "Missing $keystorePropertiesFile — required to sign a release build. " +
+            "See wiki: Guide - App Store Launch Readiness P0 #1 for the keystore.properties format."
+    }
+}
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
 android {
@@ -15,6 +36,17 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (keystoreProperties.isNotEmpty()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -22,6 +54,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (keystoreProperties.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

@@ -8,6 +8,10 @@ build/
 *.iml
 local.properties
 
+# Android release signing (never commit — see Guide - App Store Launch Readiness P0 #1)
+keystore.properties
+androidApp/keystore/
+
 # Kotlin
 .kotlin/
 

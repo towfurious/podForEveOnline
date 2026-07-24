@@ -90,3 +90,48 @@ jobs:
           name: ios-test-reports
           path: shared/build/test-results/
           retention-days: 14
+
+  # Manual-only (never runs on push/PR — the top-level `workflow_dispatch` trigger is what
+  # this `if` restricts to). Needs 4 repo secrets that don't exist yet: ANDROID_KEYSTORE_BASE64
+  # (`base64 -i androidApp/keystore/podforeve-release.jks`), ANDROID_KEYSTORE_PASSWORD,
+  # ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD. See Guide - App Store Launch Readiness P0 #1 and
+  # ADR-011's 2026-07-22 addendum for the local keystore.properties this mirrors.
+  android-release:
+    name: Signed Android release build (manual)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Reconstruct keystore + keystore.properties from secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          mkdir -p androidApp/keystore
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > androidApp/keystore/podforeve-release.jks
+          cat > keystore.properties <<EOF
+          storeFile=androidApp/keystore/podforeve-release.jks
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+
+      - name: androidApp:bundleRelease
+        run: ./gradlew androidApp:bundleRelease --stacktrace
+
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: podforeve-release-aab
+          path: androidApp/build/outputs/bundle/release/*.aab
+          retention-days: 14

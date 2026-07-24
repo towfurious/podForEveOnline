@@ -22,3 +22,9 @@
     @kotlinx.serialization.SerialName <fields>;
 }
 -dontwarn kotlinx.serialization.**
+
+# Tink (used internally by androidx.security.crypto / EncryptedSharedPreferences) references
+# errorprone's compile-time-only annotations (@CanIgnoreReturnValue, @Immutable, etc.) — nothing
+# calls into them at runtime, R8 just can't resolve them since they're not on the classpath.
+# First surfaced 2026-07-23, the first time this project ever ran a release (R8-minified) build.
+-dontwarn com.google.errorprone.annotations.**

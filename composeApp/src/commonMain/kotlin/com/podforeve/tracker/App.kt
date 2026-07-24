@@ -51,8 +51,10 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
+import com.podforeve.tracker.platform.ConnectivityObserver
 import com.podforeve.tracker.platform.RequestNotificationPermissionEffect
 import com.podforeve.tracker.platform.rememberHapticFeedback
+import com.podforeve.tracker.ui.component.OfflineBanner
 import com.podforeve.tracker.ui.component.PodSplashScreen
 import com.podforeve.tracker.ui.icon.EveIcons
 import com.podforeve.tracker.ui.screen.DashboardScreen
@@ -73,8 +75,10 @@ import org.koin.mp.KoinPlatform.getKoin
 fun App() {
     val authRepository: AuthRepository = remember { getKoin().get() }
     val themeRepo: ThemeRepository = remember { getKoin().get() }
+    val connectivityObserver: ConnectivityObserver = remember { getKoin().get() }
     val authState by authRepository.authState.collectAsState()
     val appTheme by themeRepo.themeFlow.collectAsState()
+    val isOnline by connectivityObserver.isOnline.collectAsState(initial = true)
     var splashAnimDone by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -88,16 +92,22 @@ fun App() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            val authResolved = authState !is AuthState.Loading
-            if (!splashAnimDone || !authResolved) {
-                SplashScreen(onFinished = { splashAnimDone = true })
-            } else {
-                when (authState) {
-                    is AuthState.Unauthenticated,
-                    is AuthState.Error,
-                    -> LoginScreen()
-                    is AuthState.Authenticated -> MainApp()
-                    else -> Unit
+            Column(Modifier.fillMaxSize()) {
+                OfflineBanner(visible = !isOnline)
+
+                val authResolved = authState !is AuthState.Loading
+                Box(Modifier.weight(1f)) {
+                    if (!splashAnimDone || !authResolved) {
+                        SplashScreen(onFinished = { splashAnimDone = true })
+                    } else {
+                        when (authState) {
+                            is AuthState.Unauthenticated,
+                            is AuthState.Error,
+                            -> LoginScreen()
+                            is AuthState.Authenticated -> MainApp()
+                            else -> Unit
+                        }
+                    }
                 }
             }
         }

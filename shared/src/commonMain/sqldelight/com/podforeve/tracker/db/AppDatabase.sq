@@ -112,3 +112,19 @@ INSERT OR REPLACE INTO industry_job (
 
 clearActiveIndustryJobs:
 DELETE FROM industry_job WHERE character_id = :characterId AND status = 'active';
+
+-- Queries: full local cache wipe on logout --------------------------------
+-- skill_type is deliberately excluded — it's shared universe reference data
+-- (type-id → name), not data about the user's own character.
+
+clearAllCharacters:
+DELETE FROM character;
+
+clearAllSkillQueue:
+DELETE FROM skill_queue_entry;
+
+clearAllPlanets:
+DELETE FROM planet;
+
+clearAllIndustryJobs:
+DELETE FROM industry_job;

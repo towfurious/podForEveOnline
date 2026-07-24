@@ -2,6 +2,8 @@ package com.podforeve.tracker.di
 
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.data.db.DatabaseDriverFactory
+import com.podforeve.tracker.data.remote.http.installEsiEssentials
+import com.podforeve.tracker.platform.ConnectivityChecker
 import com.podforeve.tracker.platform.NotificationScheduler
 import com.podforeve.tracker.platform.SecureStorage
 import io.ktor.client.HttpClient
@@ -23,6 +25,7 @@ val platformModule = module {
     single { SecureStorage(get()) }
     single { DatabaseDriverFactory(get()) }
     single { NotificationScheduler(get()) }
+    single { ConnectivityChecker(get()) }
 
     val ssoNamed = named("sso")
     val esiNamed = named("esi")
@@ -39,6 +42,7 @@ val platformModule = module {
                 requestTimeoutMillis = 30_000
                 connectTimeoutMillis = 15_000
             }
+            installEsiEssentials()
         }
     }
 
@@ -55,6 +59,7 @@ val platformModule = module {
                 requestTimeoutMillis = 30_000
                 connectTimeoutMillis = 15_000
             }
+            installEsiEssentials()
             install(Auth) {
                 bearer {
                     loadTokens {

@@ -1,5 +1,6 @@
 package com.podforeve.tracker.util
 
+import com.podforeve.tracker.data.remote.http.EsiErrorBudgetExhaustedException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -9,6 +10,24 @@ import kotlin.test.assertTrue
 // to be correct) through userMessage()'s end-to-end behavior — matches how the repositories that
 // actually call this mapper only ever see the final message, never the individual predicates.
 class EsiErrorMapperTest {
+
+    @Test
+    fun rateLimitExceptionsGetAFriendlyBackoffMessage() {
+        assertEquals(
+            "ESI is rate-limited right now. Try again shortly.",
+            EsiErrorMapper.userMessage(EsiErrorBudgetExhaustedException("ESI rate limit hit (420) — retry in 60s")),
+        )
+    }
+
+    @Test
+    fun rateLimitTakesPrecedenceOverAuthEvenIfMessageMentions401() {
+        // The exception's *type* drives this category, not its message content — a rate-limit
+        // exception whose message happens to also mention an auth-looking number must still win.
+        assertEquals(
+            "ESI is rate-limited right now. Try again shortly.",
+            EsiErrorMapper.userMessage(EsiErrorBudgetExhaustedException("401 unrelated coincidence")),
+        )
+    }
 
     @Test
     fun authErrorsAskToLogInAgain() {

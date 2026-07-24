@@ -3,6 +3,7 @@
 package com.podforeve.tracker.auth
 
 import com.podforeve.tracker.auth.model.AuthState
+import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.platform.SecureStorage
 import com.podforeve.tracker.platform.SecureStorageKeys
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ class AuthRepository(
     private val pkceHelper: OAuthPkceHelper,
     private val authService: EsiAuthService,
     private val secureStorage: SecureStorage,
+    private val db: AppDatabase,
 ) {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -94,10 +96,19 @@ class AuthRepository(
         }
     }
 
+    // Clears the session AND the local character-data cache, so no ESI data outlives the login
+    // that fetched it on this device. skill_type (universe type-id → name) is deliberately left
+    // alone: it's shared reference data, not data about the user's own character.
     fun logout() {
         secureStorage.delete(SecureStorageKeys.REFRESH_TOKEN)
         accessToken = null
         accessTokenExpiryEpochSeconds = 0L
+        db.transaction {
+            db.appDatabaseQueries.clearAllCharacters()
+            db.appDatabaseQueries.clearAllSkillQueue()
+            db.appDatabaseQueries.clearAllPlanets()
+            db.appDatabaseQueries.clearAllIndustryJobs()
+        }
         _authState.value = AuthState.Unauthenticated
     }
 

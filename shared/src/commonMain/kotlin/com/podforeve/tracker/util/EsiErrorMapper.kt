@@ -1,13 +1,18 @@
 package com.podforeve.tracker.util
 
+import com.podforeve.tracker.data.remote.http.EsiErrorBudgetExhaustedException
+
 object EsiErrorMapper {
     fun userMessage(e: Exception): String = when {
+        isRateLimited(e) -> "ESI is rate-limited right now. Try again shortly."
         isAuthError(e) -> "Session expired. Please log in again."
         isTimeout(e) -> "Connection timed out. Check your connection."
         isServerError(e) -> "EVE servers are temporarily unavailable."
         isNetworkError(e) -> "No internet connection."
         else -> "Something went wrong. Please try again."
     }
+
+    fun isRateLimited(e: Exception): Boolean = e is EsiErrorBudgetExhaustedException
 
     fun isAuthError(e: Exception): Boolean {
         val msg = e.message?.lowercase() ?: return false

@@ -1,4 +1,4 @@
-> **DRAFT — not yet reviewed or published.** Written 2026-07-16 as part of [Guide - App Store Launch Readiness](../podForEveOnline-vault/wiki/guides/Guide%20-%20App%20Store%20Launch%20Readiness.md) (P0 #4). Needs: your review of the wording, a contact address filled in below, and a hosting decision before it's linked from Play Console / App Store Connect.
+> **Published.** Live at **https://towfurious.github.io/podforeve-privacy/** (separate public repo `towfurious/podforeve-privacy`, GitHub Pages — this file is the canonical source, keep both in sync on future edits). This copy in the private app repo is the working draft; the published page is what's actually linked from Play Console / App Store Connect.
 
 # Privacy Policy for PodForEve
 
@@ -24,9 +24,7 @@ Nothing described above is transmitted to PodForEve's developer or to any third 
 
 ## Data retention and deletion
 
-Logging out of PodForEve clears your stored login session (the refresh token) from the device. The local cache of character/skill/job/PI data described above currently remains on the device after logout, until you uninstall the app or clear the app's storage from your device's system settings.
-
-<!-- TODO before publishing: consider making "log out" also wipe the local cache, so this section can say logout removes everything. Tracked as P1 #5 in the Guide. -->
+Logging out of PodForEve clears your stored login session (the refresh token) and the local cache of character/skill/job/PI data described above. Nothing described above survives on the device after logout, other than by uninstalling the app itself.
 
 ## Analytics and tracking
 
@@ -46,4 +44,4 @@ If this policy changes, the "Last updated" date above will change and, for mater
 
 ## Contact
 
-Questions about this policy: **[fill in a contact email or repo URL]**
+Questions about this policy: **viktor.shavarin.dev@gmail.com**

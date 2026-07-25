@@ -20,6 +20,12 @@ Run:
 ./gradlew composeApp:ktlintCheck shared:ktlintCheck composeApp:detekt shared:detekt
 ```
 
+**If the diff touches anything under `shared/src/androidMain` (or is otherwise androidApp-visible), also run:**
+```
+./gradlew androidApp:lintDebug
+```
+This is not optional for those changes. [[ADR-016 - AGP KMP Library Plugin Migration]] moved `shared`/`composeApp` to a variant-agnostic AGP plugin that dropped their own Android-Lint-in-`check` integration — their `ktlint`/`detekt` say nothing about missing manifest permissions or other Lint-only findings. `androidApp` is a plain `com.android.application` and still has full Android Lint. On 2026-07-22 this exact gap let a real bug ship: `ConnectivityChecker.android.kt` called `ConnectivityManager.getActiveNetwork()` without `ACCESS_NETWORK_STATE` in the manifest — compiled clean, ktlint/detekt clean, unit tests green, and crashed fatally on every real-device launch. `androidApp:lintDebug`'s `MissingPermission` check catches this class of bug immediately; nothing else in this list does. See [[ADR-019 - Offline Detection]] for the full incident.
+
 - If ktlint fails: run `./gradlew composeApp:ktlintFormat shared:ktlintFormat`, then re-run the check. Ktlint violations are formatting, not judgment calls — always auto-fix, never hand-edit to satisfy it.
 - If detekt fails on something that's a deliberate, reasoned choice (e.g. a broad `catch (e: Exception)` that's intentionally catching "anything, because the caller must never see a failure from this" — see `NotificationScheduler.android.kt`'s `TooGenericExceptionCaught` suppression, or `SecureStorage.android.kt`'s `SwallowedException` suppression), add `@Suppress("RuleName")` with a comment explaining *why* the broad handling is correct here, not just that it's suppressed. If you can't articulate why in one sentence, it's probably a real finding — fix the code instead of suppressing.
 - Don't move on to Step 2 until this is clean. A change that doesn't compile or lint clean isn't ready for a logic review yet.

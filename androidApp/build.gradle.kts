@@ -3,6 +3,8 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 // Release signing — see wiki: Guide - App Store Launch Readiness (P0 #1), mirrors ADR-011's
@@ -75,6 +77,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.browser)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.no.op)
     debugImplementation(libs.compose.ui.tooling)

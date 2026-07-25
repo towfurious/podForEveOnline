@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "226412711285",
+    "firebase_url": "https://pod-for-eve-online.firebaseio.com",
+    "project_id": "pod-for-eve-online",
+    "storage_bucket": "pod-for-eve-online.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:226412711285:android:bc2b676143a8a97f71573c",
+        "android_client_info": {
+          "package_name": "com.podforeve.tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLDGZlUBxq9-3Bkgtt0mbeKAJXjml8XRA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:226412711285:android:a96946db91627026",
+        "android_client_info": {
+          "package_name": "com.viktorshavarin.podforeveonline"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLDGZlUBxq9-3Bkgtt0mbeKAJXjml8XRA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

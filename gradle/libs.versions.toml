@@ -41,6 +41,11 @@ androidx-security-crypto = "1.1.0"
 androidx-browser        = "1.10.0"
 chucker                 = "4.3.1"
 
+# Firebase (Crashlytics — see ADR-021)
+google-services         = "4.5.0"
+firebase-crashlytics-gradle = "3.0.7"
+firebase-bom            = "34.16.0"
+
 [libraries]
 # Ktor
 ktor-client-core                  = { module = "io.ktor:ktor-client-core",                  version.ref = "ktor" }
@@ -93,6 +98,10 @@ chucker                 = { module = "com.github.chuckerteam.chucker:library",  
 chucker-no-op           = { module = "com.github.chuckerteam.chucker:library-no-op",  version.ref = "chucker" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
 
+# Firebase — version comes from the BoM platform dependency, not pinned per-library
+firebase-bom            = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-crashlytics     = { module = "com.google.firebase:firebase-crashlytics" }
+
 # Linting
 detekt-compose-rules    = { module = "io.nlopez.compose.rules:detekt",                version.ref = "compose-rules" }
 
@@ -109,3 +118,5 @@ sqldelight               = { id = "app.cash.sqldelight",                       v
 kotlin-apple-privacy-manifests = { id = "org.jetbrains.kotlin.apple-privacy-manifests", version.ref = "apple-privacy-manifests" }
 ktlint                   = { id = "org.jlleitschuh.gradle.ktlint",             version.ref = "ktlint-gradle" }
 detekt                   = { id = "io.gitlab.arturbosch.detekt",               version.ref = "detekt" }
+google-services          = { id = "com.google.gms.google-services",           version.ref = "google-services" }
+firebase-crashlytics     = { id = "com.google.firebase.crashlytics",           version.ref = "firebase-crashlytics-gradle" }

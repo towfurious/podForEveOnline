@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.ktlint)                apply false
     alias(libs.plugins.detekt)                apply false
     alias(libs.plugins.kotlin.apple.privacy.manifests) apply false
+    alias(libs.plugins.google.services)       apply false
+    alias(libs.plugins.firebase.crashlytics)  apply false
 }
 
 // Capture version-catalog entry at root scope; `libs` is not available inside subprojects {}

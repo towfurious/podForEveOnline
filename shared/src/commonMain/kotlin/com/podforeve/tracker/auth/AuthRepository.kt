@@ -112,6 +112,17 @@ class AuthRepository(
         _authState.value = AuthState.Unauthenticated
     }
 
+    // Enters Demo Mode: static sample data, no SSO session, no ESI/DB access at all —
+    // see [[ADR-022 - Demo Mode]]. Never touches secureStorage or db, so exitDemo() is
+    // a plain state flip, unlike logout()'s cache wipe.
+    fun enterDemoMode() {
+        _authState.value = AuthState.Demo
+    }
+
+    fun exitDemo() {
+        _authState.value = AuthState.Unauthenticated
+    }
+
     private fun storeTokens(tokens: com.podforeve.tracker.auth.model.OAuthTokens) {
         secureStorage.write(SecureStorageKeys.REFRESH_TOKEN, tokens.refreshToken)
         accessToken = tokens.accessToken

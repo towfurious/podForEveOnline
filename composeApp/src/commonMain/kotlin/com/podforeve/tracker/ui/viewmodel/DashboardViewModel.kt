@@ -8,6 +8,7 @@ import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.data.repository.CharacterRepository
 import com.podforeve.tracker.data.repository.SkillQueueRepository
+import com.podforeve.tracker.demo.DemoData
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
@@ -45,9 +46,11 @@ class DashboardViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState = refreshTrigger
         .flatMapLatest {
-            val characterId =
-                (authRepository.authState.value as? AuthState.Authenticated)?.characterId
-                    ?: return@flatMapLatest flowOf(UiState.Error("Not authenticated"))
+            val characterId = when (val state = authRepository.authState.value) {
+                is AuthState.Demo -> return@flatMapLatest flowOf(UiState.Success(DemoData.dashboard))
+                is AuthState.Authenticated -> state.characterId
+                else -> return@flatMapLatest flowOf(UiState.Error("Not authenticated"))
+            }
             combine(
                 characterRepository.observeCharacter(characterId),
                 skillQueueRepository.observeSkillQueue(characterId),

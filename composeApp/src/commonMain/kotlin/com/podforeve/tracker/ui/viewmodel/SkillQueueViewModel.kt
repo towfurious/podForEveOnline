@@ -5,6 +5,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.data.repository.SkillQueueRepository
+import com.podforeve.tracker.demo.DemoData
 import com.podforeve.tracker.domain.model.UiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,11 +25,13 @@ class SkillQueueViewModel(private val repository: SkillQueueRepository, private 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState = refreshTrigger
         .flatMapLatest {
-            val characterId =
-                (authRepository.authState.value as? AuthState.Authenticated)?.characterId
-                    ?: return@flatMapLatest flowOf(
-                        UiState.Error("Not authenticated — please log in."),
-                    )
+            val characterId = when (val state = authRepository.authState.value) {
+                is AuthState.Demo -> return@flatMapLatest flowOf(UiState.Success(DemoData.skillQueue))
+                is AuthState.Authenticated -> state.characterId
+                else -> return@flatMapLatest flowOf(
+                    UiState.Error("Not authenticated — please log in."),
+                )
+            }
             repository.observeSkillQueue(characterId)
         }
         .stateIn(

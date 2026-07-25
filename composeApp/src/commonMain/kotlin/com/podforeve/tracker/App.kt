@@ -54,6 +54,7 @@ import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.platform.ConnectivityObserver
 import com.podforeve.tracker.platform.RequestNotificationPermissionEffect
 import com.podforeve.tracker.platform.rememberHapticFeedback
+import com.podforeve.tracker.ui.component.DemoModeBanner
 import com.podforeve.tracker.ui.component.OfflineBanner
 import com.podforeve.tracker.ui.component.PodSplashScreen
 import com.podforeve.tracker.ui.icon.EveIcons
@@ -93,7 +94,10 @@ fun App() {
             color = MaterialTheme.colorScheme.background,
         ) {
             Column(Modifier.fillMaxSize()) {
-                OfflineBanner(visible = !isOnline)
+                // Demo Mode never touches the network, so connectivity state doesn't apply to
+                // it — showing "you're offline" over static sample data would just be wrong.
+                OfflineBanner(visible = !isOnline && authState !is AuthState.Demo)
+                DemoModeBanner(visible = authState is AuthState.Demo, onExit = { authRepository.exitDemo() })
 
                 val authResolved = authState !is AuthState.Loading
                 Box(Modifier.weight(1f)) {
@@ -104,7 +108,7 @@ fun App() {
                             is AuthState.Unauthenticated,
                             is AuthState.Error,
                             -> LoginScreen()
-                            is AuthState.Authenticated -> MainApp()
+                            is AuthState.Authenticated, is AuthState.Demo -> MainApp()
                             else -> Unit
                         }
                     }

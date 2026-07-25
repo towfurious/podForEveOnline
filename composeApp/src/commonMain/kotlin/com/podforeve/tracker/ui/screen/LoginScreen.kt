@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -74,6 +75,15 @@ fun LoginScreen() {
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("Login with EVE Online")
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                TextButton(
+                    onClick = { authRepository.enterDemoMode() },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Try Demo Mode")
                 }
             }
 

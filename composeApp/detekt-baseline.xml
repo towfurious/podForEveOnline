@@ -6,7 +6,7 @@
     <ID>FunctionNaming:MainViewController.kt$fun MainViewController()</ID>
     <ID>LambdaParameterEventTrailing:App.kt$onClick</ID>
     <ID>LambdaParameterInRestartableEffect:PodSplashScreen.kt$onFinished</ID>
-    <ID>LongMethod:DashboardScreen.kt$@Composable private fun DashboardSuccess(data: DashboardData, onLogout: () -&gt; Unit)</ID>
+    <ID>LongMethod:DashboardScreen.kt$@Composable private fun DashboardSuccess(data: DashboardData, isDemo: Boolean = false, onLogout: () -&gt; Unit)</ID>
     <ID>LongMethod:PodSplashScreen.kt$private fun buildBlobPath(ox: Float, oy: Float, w: Float, h: Float): Path</ID>
     <ID>LongParameterList:PodSplashScreen.kt$( cx: Float, cy: Float, sc: Float, alpha: Float, h1w: Float, h1a: Float, h2w: Float, h2a: Float, h3w: Float, h3a: Float, cache: SplashPathCache, )</ID>
     <ID>MatchingDeclarationName:Theme.kt$AppTheme</ID>

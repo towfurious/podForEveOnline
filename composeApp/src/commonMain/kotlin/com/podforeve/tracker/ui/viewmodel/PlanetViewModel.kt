@@ -5,6 +5,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.data.repository.PlanetRepository
+import com.podforeve.tracker.demo.DemoData
 import com.podforeve.tracker.domain.model.Planet
 import com.podforeve.tracker.domain.model.UiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,11 +41,10 @@ class PlanetViewModel(private val repository: PlanetRepository, private val auth
     }
 
     private fun loadPlanets(): Flow<UiState<List<Planet>>> {
-        val characterId = (authRepository.authState.value as? AuthState.Authenticated)?.characterId
-        val source: Flow<UiState<List<Planet>>> = if (characterId != null) {
-            repository.observePlanets(characterId)
-        } else {
-            flowOf(UiState.Error("Not authenticated"))
+        val source: Flow<UiState<List<Planet>>> = when (val state = authRepository.authState.value) {
+            is AuthState.Demo -> flowOf(UiState.Success(DemoData.planets))
+            is AuthState.Authenticated -> repository.observePlanets(state.characterId)
+            else -> flowOf(UiState.Error("Not authenticated"))
         }
         return source.onCompletion { cause -> if (cause == null) _isRefreshing.value = false }
     }

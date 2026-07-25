@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import coil3.compose.AsyncImage
+import com.podforeve.tracker.auth.AuthRepository
+import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
@@ -67,6 +69,7 @@ import com.podforeve.tracker.ui.theme.rememberThemeRepositoryOrNull
 import com.podforeve.tracker.ui.viewmodel.DashboardData
 import com.podforeve.tracker.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.mp.KoinPlatform.getKoin
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.time.Clock
@@ -77,16 +80,20 @@ class DashboardScreen : Screen {
     override fun Content() {
         val viewModel = koinScreenModel<DashboardViewModel>()
         val state by viewModel.uiState.collectAsState()
+        val authRepository: AuthRepository = remember { getKoin().get() }
+        val authState by authRepository.authState.collectAsState()
+        val isDemo = authState is AuthState.Demo
         DashboardContent(
             state = state,
+            isDemo = isDemo,
             onRetry = viewModel::refresh,
-            onLogout = viewModel::logout,
+            onLogout = { if (isDemo) authRepository.exitDemo() else viewModel.logout() },
         )
     }
 }
 
 @Composable
-private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit, onLogout: () -> Unit) {
+private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit, isDemo: Boolean = false, onLogout: () -> Unit) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.statusBars,
@@ -99,14 +106,14 @@ private fun DashboardContent(state: UiState<DashboardData>, onRetry: () -> Unit,
             when (state) {
                 is UiState.Loading -> DashboardSkeleton()
                 is UiState.Error -> DashboardError(state.message, onRetry)
-                is UiState.Success -> DashboardSuccess(state.data, onLogout)
+                is UiState.Success -> DashboardSuccess(state.data, isDemo, onLogout)
             }
         }
     }
 }
 
 @Composable
-private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
+private fun DashboardSuccess(data: DashboardData, isDemo: Boolean = false, onLogout: () -> Unit) {
     var showSettings by remember { mutableStateOf(false) }
     var showAppearance by remember { mutableStateOf(false) }
     val themeRepo = rememberThemeRepositoryOrNull()
@@ -233,53 +240,72 @@ private fun DashboardSuccess(data: DashboardData, onLogout: () -> Unit) {
         }
     }
 
-    // ── Settings sheet — two-page: menu → appearance ──────────────────────────
     if (showSettings) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                if (showAppearance) showAppearance = false else showSettings = false
+        DashboardSettingsSheet(
+            isDemo = isDemo,
+            showAppearance = showAppearance,
+            currentTheme = currentTheme,
+            onBack = { showAppearance = false },
+            onShowAppearance = { showAppearance = true },
+            onThemeChange = { themeRepo?.current = it },
+            onDismissRequest = { if (showAppearance) showAppearance = false else showSettings = false },
+            onLogoutClick = {
+                showSettings = false
+                onLogout()
             },
-        ) {
-            Column(Modifier.fillMaxWidth().padding(bottom = 36.dp)) {
-                if (showAppearance) {
-                    // ── Appearance page ───────────────────────────────────────
-                    Row(
-                        Modifier.fillMaxWidth().padding(start = 4.dp, end = 20.dp, bottom = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(onClick = { showAppearance = false }) {
-                            Text(
-                                text = "‹",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                        Text("Appearance", style = MaterialTheme.typography.titleMedium)
-                    }
-                    HorizontalDivider()
-                    AppTheme.entries.forEach { theme ->
-                        ThemeRow(
-                            theme = theme,
-                            selected = currentTheme == theme,
-                            onClick = { themeRepo?.current = theme },
+        )
+    }
+}
+
+// ── Settings sheet — two-page: menu → appearance ──────────────────────────────
+@Composable
+private fun DashboardSettingsSheet(
+    isDemo: Boolean,
+    showAppearance: Boolean,
+    currentTheme: AppTheme,
+    onBack: () -> Unit,
+    onShowAppearance: () -> Unit,
+    onThemeChange: (AppTheme) -> Unit,
+    onDismissRequest: () -> Unit,
+    onLogoutClick: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismissRequest) {
+        Column(Modifier.fillMaxWidth().padding(bottom = 36.dp)) {
+            if (showAppearance) {
+                // ── Appearance page ───────────────────────────────────────────
+                Row(
+                    Modifier.fillMaxWidth().padding(start = 4.dp, end = 20.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = onBack) {
+                        Text(
+                            text = "‹",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
-                        if (theme != AppTheme.entries.last()) {
-                            HorizontalDivider(Modifier.padding(start = 64.dp, end = 20.dp))
-                        }
                     }
-                } else {
-                    // ── Main menu ─────────────────────────────────────────────
-                    SettingsRow(label = "Appearance", chevron = true, onClick = { showAppearance = true })
-                    HorizontalDivider(Modifier.padding(horizontal = 20.dp))
-                    SettingsRow(
-                        label = "Log out",
-                        color = MaterialTheme.colorScheme.error,
-                        onClick = {
-                            showSettings = false
-                            onLogout()
-                        },
-                    )
+                    Text("Appearance", style = MaterialTheme.typography.titleMedium)
                 }
+                HorizontalDivider()
+                AppTheme.entries.forEach { theme ->
+                    ThemeRow(
+                        theme = theme,
+                        selected = currentTheme == theme,
+                        onClick = { onThemeChange(theme) },
+                    )
+                    if (theme != AppTheme.entries.last()) {
+                        HorizontalDivider(Modifier.padding(start = 64.dp, end = 20.dp))
+                    }
+                }
+            } else {
+                // ── Main menu ─────────────────────────────────────────────────
+                SettingsRow(label = "Appearance", chevron = true, onClick = onShowAppearance)
+                HorizontalDivider(Modifier.padding(horizontal = 20.dp))
+                SettingsRow(
+                    label = if (isDemo) "Exit Demo Mode" else "Log out",
+                    color = MaterialTheme.colorScheme.error,
+                    onClick = onLogoutClick,
+                )
             }
         }
     }

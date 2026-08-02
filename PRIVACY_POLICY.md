@@ -2,7 +2,7 @@
 
 # Privacy Policy for PodForEve
 
-**Last updated:** [fill in on publish]
+**Last updated:** July 24, 2026
 
 PodForEve ("the app") is an unofficial companion app for *EVE Online*, a game published by CCP hf. PodForEve is not affiliated with, endorsed by, or sponsored by CCP hf.
 
@@ -28,7 +28,7 @@ Logging out of PodForEve clears your stored login session (the refresh token) an
 
 ## Analytics and tracking
 
-PodForEve does not use any analytics or advertising SDK, and does not track you across apps or websites. [Update this section if a crash-reporting tool (e.g. Firebase Crashlytics or Sentry) is added later — see the Guide's P1 #4.]
+PodForEve uses Firebase Crashlytics (Google) to collect crash reports and diagnostic logs when the app crashes, so problems can be found and fixed. This includes a device/installation identifier used to de-duplicate reports, sent to Google's Firebase servers over an encrypted connection. PodForEve does not use any advertising SDK and does not track you across other apps or websites for advertising purposes.
 
 ## Children's privacy
 

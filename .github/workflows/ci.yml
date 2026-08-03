@@ -126,6 +126,18 @@ jobs:
           keyPassword=$ANDROID_KEY_PASSWORD
           EOF
 
+      # TEMPORARY debug step — diagnosing "Tag number over 30 is not supported" in
+      # FinalizeBundleTask (see Guide - App Store Launch Readiness P0 #1 / ADR
+      # in progress). Remove once root-caused. Expected sha256:
+      # 9b983876063e3238bc6b415533b8985cacaae554ccd51e40e28c6494731abf4c (2254 bytes).
+      - name: DEBUG keystore checksum
+        run: |
+          sha256sum androidApp/keystore/podforeve-release.jks
+          wc -c androidApp/keystore/podforeve-release.jks
+          keytool -list -v -keystore androidApp/keystore/podforeve-release.jks -storepass "$ANDROID_KEYSTORE_PASSWORD" 2>&1 | head -15
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+
       - name: androidApp:bundleRelease
         run: ./gradlew androidApp:bundleRelease --stacktrace
 

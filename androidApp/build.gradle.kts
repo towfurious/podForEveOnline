@@ -34,7 +34,11 @@ android {
         applicationId = "com.podforeve.tracker"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
+        // CI passes -PversionCode=<github.run_number> for a real android-release build (see
+        // .github/workflows/ci.yml) so every Play Console upload gets a strictly-increasing
+        // code with no manual bump. Local/debug builds fall back to 1 — Play Console never
+        // sees those.
+        versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
         versionName = "0.1.0"
     }
 

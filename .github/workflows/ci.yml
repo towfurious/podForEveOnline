@@ -92,11 +92,12 @@ jobs:
           retention-days: 14
 
   # Manual-only (never runs on push/PR — the top-level `workflow_dispatch` trigger is what
-  # this `if` restricts to). Needs 5 repo secrets: ANDROID_KEYSTORE_BASE64
+  # this `if` restricts to). Needs 6 repo secrets: ANDROID_KEYSTORE_BASE64
   # (`base64 -i androidApp/keystore/podforeve-release.jks`), ANDROID_KEYSTORE_PASSWORD,
-  # ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD, and ESI_CLIENT_ID (see the dedicated step below
-  # for why this one is needed too). See Guide - App Store Launch Readiness P0 #1 and
-  # ADR-011's 2026-07-22 addendum for the local keystore.properties this mirrors.
+  # ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD, ESI_CLIENT_ID (see the dedicated step below
+  # for why this one is needed too), and PLAY_SERVICE_ACCOUNT_JSON (Play Console upload —
+  # see the final step). See Guide - App Store Launch Readiness P0 #1 and ADR-011's
+  # 2026-07-22 addendum for the local keystore.properties this mirrors.
   android-release:
     name: Signed Android release build (manual)
     runs-on: ubuntu-latest
@@ -157,8 +158,10 @@ jobs:
           fi
           echo "esi.client_id=$ESI_CLIENT_ID" >> local.properties
 
+      # versionCode = this workflow's own run number — strictly increasing across every CI
+      # run (release or not), which is all Play Console requires. See androidApp/build.gradle.kts.
       - name: androidApp:bundleRelease
-        run: ./gradlew androidApp:bundleRelease --stacktrace
+        run: ./gradlew androidApp:bundleRelease -PversionCode=${{ github.run_number }} --stacktrace
 
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
@@ -166,3 +169,17 @@ jobs:
           name: podforeve-release-aab
           path: androidApp/build/outputs/bundle/release/*.aab
           retention-days: 14
+
+      # Publishes straight to the closed-testing track testers already see — this job only
+      # ever runs on a manual workflow_dispatch, never on push/PR, so there's no risk of an
+      # ordinary commit silently shipping to real testers. PLAY_SERVICE_ACCOUNT_JSON is a
+      # Google Cloud service-account key (JSON) granted "Release to testing tracks" access
+      # in Play Console → Setup → API access. See Guide - App Store Launch Readiness.
+      - name: Publish to Play Console (closed testing track)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.podforeve.tracker
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          track: alpha
+          status: completed

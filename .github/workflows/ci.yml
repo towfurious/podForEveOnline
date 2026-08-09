@@ -92,9 +92,10 @@ jobs:
           retention-days: 14
 
   # Manual-only (never runs on push/PR — the top-level `workflow_dispatch` trigger is what
-  # this `if` restricts to). Needs 4 repo secrets that don't exist yet: ANDROID_KEYSTORE_BASE64
+  # this `if` restricts to). Needs 5 repo secrets: ANDROID_KEYSTORE_BASE64
   # (`base64 -i androidApp/keystore/podforeve-release.jks`), ANDROID_KEYSTORE_PASSWORD,
-  # ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD. See Guide - App Store Launch Readiness P0 #1 and
+  # ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD, and ESI_CLIENT_ID (see the dedicated step below
+  # for why this one is needed too). See Guide - App Store Launch Readiness P0 #1 and
   # ADR-011's 2026-07-22 addendum for the local keystore.properties this mirrors.
   android-release:
     name: Signed Android release build (manual)
@@ -137,6 +138,21 @@ jobs:
             echo "::error::Reconstructed keystore is only $size bytes — ANDROID_KEYSTORE_BASE64 secret is likely empty or corrupt."
             exit 1
           fi
+
+      # ESI_CLIENT_ID already existed as a repo secret, but no step ever consumed it — this
+      # job only ever wrote keystore.properties, never local.properties. `:shared:generateEsiConfig`
+      # (ADR-011) silently defaults to an empty client_id when local.properties is absent, so the
+      # release AAB still built and signed fine, but real EVE SSO login failed at runtime with
+      # "The client_id parameter is required." Found 2026-08-09 on the actual Play Store install.
+      - name: Write local.properties (ESI client ID)
+        env:
+          ESI_CLIENT_ID: ${{ secrets.ESI_CLIENT_ID }}
+        run: |
+          if [ -z "$ESI_CLIENT_ID" ]; then
+            echo "::error::ESI_CLIENT_ID secret is empty or unset — release build would silently ship with a broken login."
+            exit 1
+          fi
+          echo "esi.client_id=$ESI_CLIENT_ID" >> local.properties
 
       - name: androidApp:bundleRelease
         run: ./gradlew androidApp:bundleRelease --stacktrace

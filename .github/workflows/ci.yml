@@ -139,11 +139,14 @@ jobs:
             exit 1
           fi
 
-      # ESI_CLIENT_ID already existed as a repo secret, but no step ever consumed it — this
-      # job only ever wrote keystore.properties, never local.properties. `:shared:generateEsiConfig`
-      # (ADR-011) silently defaults to an empty client_id when local.properties is absent, so the
-      # release AAB still built and signed fine, but real EVE SSO login failed at runtime with
-      # "The client_id parameter is required." Found 2026-08-09 on the actual Play Store install.
+      # This job only ever wrote keystore.properties, never local.properties.
+      # `:shared:generateEsiConfig` (ADR-011) silently defaults to an empty client_id when
+      # local.properties is absent, so the release AAB still built and signed fine, but real
+      # EVE SSO login failed at runtime with "The client_id parameter is required." Found
+      # 2026-08-09 on the actual Play Store install. ESI_CLIENT_ID is the same public,
+      # non-secret OAuth2 PKCE client id from local.properties (ADR-011) — kept as a repo
+      # secret anyway per that ADR's own hygiene rule (no plaintext identifiers in committed
+      # files; keeps rotation possible), consistent with the 4 keystore secrets above.
       - name: Write local.properties (ESI client ID)
         env:
           ESI_CLIENT_ID: ${{ secrets.ESI_CLIENT_ID }}

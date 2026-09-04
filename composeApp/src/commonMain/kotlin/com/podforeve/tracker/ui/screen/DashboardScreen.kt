@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,6 +58,8 @@ import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
+import com.podforeve.tracker.platform.NotificationPreferences
+import com.podforeve.tracker.platform.supportsSkillLiveCountdownNotification
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.ErrorState
 import com.podforeve.tracker.ui.component.GlowCard
@@ -118,6 +122,9 @@ private fun DashboardSuccess(data: DashboardData, isDemo: Boolean = false, onLog
     var showAppearance by remember { mutableStateOf(false) }
     val themeRepo = rememberThemeRepositoryOrNull()
     val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.EMBER) }).collectAsState()
+    val notificationPreferences = rememberNotificationPreferencesOrNull()
+    val skillLiveNotificationEnabled by
+        (notificationPreferences?.skillLiveCountdownEnabledFlow ?: remember { MutableStateFlow(true) }).collectAsState()
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val now = remember { Clock.System.now().epochSeconds }
 
@@ -245,9 +252,11 @@ private fun DashboardSuccess(data: DashboardData, isDemo: Boolean = false, onLog
             isDemo = isDemo,
             showAppearance = showAppearance,
             currentTheme = currentTheme,
+            skillLiveNotificationEnabled = skillLiveNotificationEnabled,
             onBack = { showAppearance = false },
             onShowAppearance = { showAppearance = true },
             onThemeChange = { themeRepo?.current = it },
+            onSkillLiveNotificationToggle = { notificationPreferences?.skillLiveCountdownEnabled = it },
             onDismissRequest = { if (showAppearance) showAppearance = false else showSettings = false },
             onLogoutClick = {
                 showSettings = false
@@ -263,9 +272,11 @@ private fun DashboardSettingsSheet(
     isDemo: Boolean,
     showAppearance: Boolean,
     currentTheme: AppTheme,
+    skillLiveNotificationEnabled: Boolean,
     onBack: () -> Unit,
     onShowAppearance: () -> Unit,
     onThemeChange: (AppTheme) -> Unit,
+    onSkillLiveNotificationToggle: (Boolean) -> Unit,
     onDismissRequest: () -> Unit,
     onLogoutClick: () -> Unit,
 ) {
@@ -301,6 +312,14 @@ private fun DashboardSettingsSheet(
                 // ── Main menu ─────────────────────────────────────────────────
                 SettingsRow(label = "Appearance", chevron = true, onClick = onShowAppearance)
                 HorizontalDivider(Modifier.padding(horizontal = 20.dp))
+                if (supportsSkillLiveCountdownNotification) {
+                    SettingsToggleRow(
+                        label = "Live countdown in shade",
+                        checked = skillLiveNotificationEnabled,
+                        onCheckedChange = onSkillLiveNotificationToggle,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 20.dp))
+                }
                 SettingsRow(
                     label = if (isDemo) "Exit Demo Mode" else "Log out",
                     color = MaterialTheme.colorScheme.error,
@@ -442,6 +461,32 @@ private fun SettingsRow(label: String, color: Color = MaterialTheme.colorScheme.
         }
     }
 }
+
+@Composable
+private fun SettingsToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+// Mirrors rememberThemeRepositoryOrNull's null-under-@Preview guard (see ADR-013's
+// getKoin().get()-in-Composables gap addendum) — NotificationPreferences lives in `shared`
+// rather than composeApp (it must be visible to NotificationScheduler.android.kt), but the
+// same Koin-in-Preview-sandbox crash risk applies, so the guard is duplicated here rather
+// than shared, since shared has no Compose dependency to host a @Composable helper in.
+@Composable
+private fun rememberNotificationPreferencesOrNull(): NotificationPreferences? =
+    if (LocalInspectionMode.current) null else remember { getKoin().get() }
 
 @Composable
 private fun ThemeRow(theme: AppTheme, selected: Boolean, onClick: () -> Unit) {

@@ -14,6 +14,7 @@ import com.podforeve.tracker.data.repository.PlanetRepository
 import com.podforeve.tracker.data.repository.SkillQueueRepository
 import com.podforeve.tracker.db.AppDatabase
 import com.podforeve.tracker.platform.ConnectivityObserver
+import com.podforeve.tracker.platform.NotificationPreferences
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -28,6 +29,7 @@ val sharedModule = module {
     single { AuthRepository(get(), get(), get(), get()) }
     single { AppDatabase(get<DatabaseDriverFactory>().createDriver()) }
     single { ConnectivityObserver(get()) }
+    single { NotificationPreferences(get()) }
     single {
         SkillQueueEsiApi(
             esiClient = get(esiClient),

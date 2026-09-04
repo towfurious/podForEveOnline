@@ -12,4 +12,5 @@ expect class SecureStorage {
 object SecureStorageKeys {
     const val REFRESH_TOKEN = "eve.refresh_token"
     const val THEME = "app.theme"
+    const val SKILL_LIVE_NOTIFICATION_ENABLED = "notification.skill_live.enabled"
 }

@@ -24,7 +24,7 @@ import org.koin.dsl.module
 val platformModule = module {
     single { SecureStorage(get()) }
     single { DatabaseDriverFactory(get()) }
-    single { NotificationScheduler(get()) }
+    single { NotificationScheduler(get(), get()) }
     single { ConnectivityChecker(get()) }
 
     val ssoNamed = named("sso")

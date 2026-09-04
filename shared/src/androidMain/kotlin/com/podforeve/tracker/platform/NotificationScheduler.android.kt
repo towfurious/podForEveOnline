@@ -47,7 +47,7 @@ internal fun ensureNotificationChannels(context: Context) {
 }
 
 // See wiki: [[ADR-015 - Unified Completion Notifications]]
-actual class NotificationScheduler(private val context: Context) {
+actual class NotificationScheduler(private val context: Context, private val notificationPreferences: NotificationPreferences) {
     private val alarmManager get() = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val prefs by lazy { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
@@ -78,8 +78,8 @@ actual class NotificationScheduler(private val context: Context) {
 
     private fun reconcileSkillService(item: ScheduledCompletion?) {
         val intent = Intent(context, SkillTrainingService::class.java)
-        if (item == null) {
-            Log.d(TAG, "reconcileSkillService: no active skill, stopping service")
+        if (item == null || !notificationPreferences.skillLiveCountdownEnabled) {
+            Log.d(TAG, "reconcileSkillService: no active skill or live countdown disabled, stopping service")
             context.stopService(intent)
             return
         }

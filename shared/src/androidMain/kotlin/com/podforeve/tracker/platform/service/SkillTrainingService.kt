@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import com.podforeve.tracker.domain.usecase.formatDhm
 import com.podforeve.tracker.platform.EXTRA_TARGET_EPOCH_SECONDS
 import com.podforeve.tracker.platform.EXTRA_TITLE
+import com.podforeve.tracker.platform.NotificationPreferences
 import com.podforeve.tracker.platform.SKILL_LIVE_NOTIFICATION_ID
 import com.podforeve.tracker.platform.ensureNotificationChannels
 import com.podforeve.tracker.shared.R
@@ -28,6 +29,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.koin.mp.KoinPlatform.getKoin
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
@@ -38,6 +40,7 @@ private const val CHANNEL_ID = "skill_training"
 class SkillTrainingService : Service() {
     private var scope: CoroutineScope? = null
     private var tickJob: Job? = null
+    private val notificationPreferences: NotificationPreferences by lazy { getKoin().get() }
 
     override fun onCreate() {
         super.onCreate()
@@ -55,6 +58,14 @@ class SkillTrainingService : Service() {
     // ktlint happens to wrap the long condition line, flipping pass/fail across reformats with
     // no code change. Suppressing at the function level rather than chasing line-wrap-sensitive
     // phrasing.
+    // LoopWithTooManyJumpStatements: the tick loop has two `break`s — preference-disabled and
+    // training-completed — deliberately kept as two independent, self-contained early exits
+    // rather than merged into the while-condition, because each leads to different cleanup
+    // (REMOVE vs DETACH+postCompletionNotification). An earlier attempt to fold the preference
+    // check into the loop condition instead of `break` was reverted during review: if the
+    // toggle happened to be off at the exact moment a skill completed, the merged version's
+    // post-loop cleanup would have wrongly REMOVEd the just-posted completion notification.
+    @Suppress("LoopWithTooManyJumpStatements")
     @SuppressLint("InlinedApi", "MissingPermission")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val title = intent?.getStringExtra(EXTRA_TITLE)
@@ -74,6 +85,16 @@ class SkillTrainingService : Service() {
         tickJob?.cancel()
         tickJob = scope?.launch {
             while (isActive) {
+                // Re-checked every tick (not just on Service start) so toggling the preference
+                // off in Dashboard settings takes effect within one tick interval, not only on
+                // the next reconcile() call (next ESI fetch) — which could be a long time away.
+                // REMOVE (not DETACH) — unlike the completion path below, there's no follow-up
+                // notification to hand the slot off to; the skill isn't actually finished.
+                if (!notificationPreferences.skillLiveCountdownEnabled) {
+                    ServiceCompat.stopForeground(this@SkillTrainingService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                    break
+                }
                 val now = Clock.System.now().epochSeconds
                 if (targetEpochSeconds - now <= 0) {
                     postCompletionNotification(title)

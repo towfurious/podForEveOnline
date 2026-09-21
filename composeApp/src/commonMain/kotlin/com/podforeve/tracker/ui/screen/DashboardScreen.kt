@@ -121,7 +121,7 @@ private fun DashboardSuccess(data: DashboardData, isDemo: Boolean = false, onLog
     var showSettings by remember { mutableStateOf(false) }
     var showAppearance by remember { mutableStateOf(false) }
     val themeRepo = rememberThemeRepositoryOrNull()
-    val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.EMBER) }).collectAsState()
+    val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.AMOLED) }).collectAsState()
     val notificationPreferences = rememberNotificationPreferencesOrNull()
     val skillLiveNotificationEnabled by
         (notificationPreferences?.skillLiveCountdownEnabledFlow ?: remember { MutableStateFlow(true) }).collectAsState()

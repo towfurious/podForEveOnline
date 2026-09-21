@@ -92,7 +92,7 @@ private fun JobsSuccess(jobs: List<IndustryJob>, onRetry: () -> Unit) {
     }
     val calculator = remember { SkillProgressCalculator() }
     val themeRepo = rememberThemeRepositoryOrNull()
-    val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.EMBER) }).collectAsState()
+    val currentTheme by (themeRepo?.themeFlow ?: remember { MutableStateFlow(AppTheme.AMOLED) }).collectAsState()
     val gain = currentTheme.gainColor
     val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = navBottom + 80.dp)) {

@@ -21,9 +21,11 @@ class ThemeRepository(private val storage: SecureStorage) {
             storage.write(SecureStorageKeys.THEME, value.name)
         }
 
+    // AMOLED is the default per tester feedback (2026-09) — softer, true-black option
+    // was preferred over the original Ember default. See ADR-013 / ADR-025-adjacent log entry.
     private fun load(): AppTheme {
-        val name = storage.read(SecureStorageKeys.THEME) ?: return AppTheme.EMBER
-        return AppTheme.entries.find { it.name == name } ?: AppTheme.EMBER
+        val name = storage.read(SecureStorageKeys.THEME) ?: return AppTheme.AMOLED
+        return AppTheme.entries.find { it.name == name } ?: AppTheme.AMOLED
     }
 }
 

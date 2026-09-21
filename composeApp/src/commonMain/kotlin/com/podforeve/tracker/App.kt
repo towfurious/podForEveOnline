@@ -52,6 +52,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.podforeve.tracker.auth.AuthRepository
 import com.podforeve.tracker.auth.model.AuthState
 import com.podforeve.tracker.platform.ConnectivityObserver
+import com.podforeve.tracker.platform.PlatformBackHandler
 import com.podforeve.tracker.platform.RequestNotificationPermissionEffect
 import com.podforeve.tracker.platform.rememberHapticFeedback
 import com.podforeve.tracker.ui.component.DemoModeBanner
@@ -140,6 +141,9 @@ private fun MainApp() {
     val hazeState = remember { HazeState() }
     TabNavigator(DashboardTab) {
         val tabNavigator = LocalTabNavigator.current
+        PlatformBackHandler(enabled = tabNavigator.current != DashboardTab) {
+            tabNavigator.current = DashboardTab
+        }
         Box(Modifier.fillMaxSize()) {
             Box(Modifier.fillMaxSize().hazeSource(hazeState)) {
                 AnimatedContent(

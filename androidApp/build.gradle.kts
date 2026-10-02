@@ -39,7 +39,7 @@ android {
         // code with no manual bump. Local/debug builds fall back to 1 — Play Console never
         // sees those.
         versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
-        versionName = "0.1.0"
+        versionName = "0.1.1"
     }
 
     signingConfigs {

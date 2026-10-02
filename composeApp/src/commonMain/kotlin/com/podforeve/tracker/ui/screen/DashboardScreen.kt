@@ -59,6 +59,9 @@ import com.podforeve.tracker.domain.model.SkillQueueEntry
 import com.podforeve.tracker.domain.model.UiState
 import com.podforeve.tracker.domain.model.WalletJournalEntry
 import com.podforeve.tracker.platform.NotificationPreferences
+import com.podforeve.tracker.platform.SUPPORT_DEVELOPMENT_URL
+import com.podforeve.tracker.platform.rememberUrlLauncher
+import com.podforeve.tracker.platform.supportsExternalSupportLink
 import com.podforeve.tracker.platform.supportsSkillLiveCountdownNotification
 import com.podforeve.tracker.ui.component.ActiveSkillProgressSection
 import com.podforeve.tracker.ui.component.ErrorState
@@ -280,6 +283,7 @@ private fun DashboardSettingsSheet(
     onDismissRequest: () -> Unit,
     onLogoutClick: () -> Unit,
 ) {
+    val openUrl = rememberUrlLauncher()
     ModalBottomSheet(onDismissRequest = onDismissRequest) {
         Column(Modifier.fillMaxWidth().padding(bottom = 36.dp)) {
             if (showAppearance) {
@@ -318,6 +322,10 @@ private fun DashboardSettingsSheet(
                         checked = skillLiveNotificationEnabled,
                         onCheckedChange = onSkillLiveNotificationToggle,
                     )
+                    HorizontalDivider(Modifier.padding(horizontal = 20.dp))
+                }
+                if (supportsExternalSupportLink) {
+                    SettingsRow(label = "☕ Support development", onClick = { openUrl(SUPPORT_DEVELOPMENT_URL) })
                     HorizontalDivider(Modifier.padding(horizontal = 20.dp))
                 }
                 SettingsRow(
